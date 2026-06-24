@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { collection, doc, setDoc, updateDoc, serverTimestamp } from 'firebase/firestore'
+import { useTranslations } from 'next-intl'
 import { Modal } from '../ui/Modal'
 import { db } from '../../lib/firebase'
 import { type PermissionDefinition } from '../../types'
@@ -15,6 +16,7 @@ interface Props {
 }
 
 export function PermissionModal({ open, onClose, permission }: Props) {
+  const t = useTranslations('rolesPermissions')
   const { user } = useAuthStore()
   const [key, setKey] = useState('')
   const [label, setLabel] = useState('')
@@ -80,35 +82,35 @@ export function PermissionModal({ open, onClose, permission }: Props) {
     <Modal
       open={open}
       onClose={handleClose}
-      title={isEdit ? 'Edit Permission' : 'Create Permission'}
+      title={isEdit ? t('editPermission') : t('createPermission')}
       size="sm"
     >
       <div className="space-y-4">
         {!isEdit && (
           <div>
-            <label className="mb-1.5 block text-sm font-semibold text-slate-400">Key</label>
+            <label className="mb-1.5 block text-sm font-semibold text-slate-400">{t('permKey')}</label>
             <input
               value={key}
               onChange={(e) => setKey(deriveKey(e.target.value))}
               placeholder="e.g. export_reports"
               className="w-full rounded-xl border border-white/[0.1] bg-white/[0.07] px-3 py-2.5 font-mono text-sm text-slate-200 placeholder:text-slate-600 focus:border-indigo-500/60 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
             />
-            <p className="mt-1 text-[11px] text-slate-600">Unique identifier — lowercase, underscores only. Auto-derived from label if left blank.</p>
+            <p className="mt-1 text-[11px] text-slate-600">{t('keyHint')}</p>
           </div>
         )}
 
         {isEdit && (
           <div>
-            <label className="mb-1.5 block text-sm font-semibold text-slate-400">Key</label>
+            <label className="mb-1.5 block text-sm font-semibold text-slate-400">{t('permKey')}</label>
             <div className="w-full rounded-xl border border-white/[0.05] bg-white/[0.03] px-3 py-2.5 font-mono text-sm text-slate-500">
               {permission?.key}
             </div>
-            <p className="mt-1 text-[11px] text-slate-600">Keys cannot be changed after creation.</p>
+            <p className="mt-1 text-[11px] text-slate-600">{t('keyLocked')}</p>
           </div>
         )}
 
         <div>
-          <label className="mb-1.5 block text-sm font-semibold text-slate-400">Label</label>
+          <label className="mb-1.5 block text-sm font-semibold text-slate-400">{t('permLabel')}</label>
           <input
             value={label}
             onChange={(e) => setLabel(e.target.value)}
@@ -119,7 +121,7 @@ export function PermissionModal({ open, onClose, permission }: Props) {
 
         <div>
           <label className="mb-1.5 block text-sm font-semibold text-slate-400">
-            Description <span className="font-normal text-slate-600">(optional)</span>
+            {t('permDesc')} <span className="font-normal text-slate-600">({t('optional')})</span>
           </label>
           <input
             value={description}
@@ -134,14 +136,16 @@ export function PermissionModal({ open, onClose, permission }: Props) {
             onClick={handleClose}
             className="rounded-xl border border-white/[0.1] px-4 py-2 text-sm font-semibold text-slate-400 transition-colors hover:bg-white/[0.06] hover:text-slate-200"
           >
-            Cancel
+            {t('cancel')}
           </button>
           <button
             onClick={handleSave}
             disabled={saving || !label.trim()}
             className="rounded-xl bg-indigo-600 px-5 py-2 text-sm font-semibold text-white shadow-lg shadow-indigo-600/25 transition-colors hover:bg-indigo-500 disabled:opacity-50"
           >
-            {saving ? (isEdit ? 'Saving…' : 'Creating…') : (isEdit ? 'Save Changes' : 'Create Permission')}
+            {saving
+              ? (isEdit ? 'Saving…' : 'Creating…')
+              : (isEdit ? t('saveChanges') : t('createPermission'))}
           </button>
         </div>
       </div>

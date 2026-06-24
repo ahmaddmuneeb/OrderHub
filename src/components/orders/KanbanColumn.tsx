@@ -2,7 +2,8 @@
 
 import { useDroppable } from '@dnd-kit/core'
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable'
-import { Order, getStatusLabel, getStatusDotColor } from '../../types'
+import { useTranslations } from 'next-intl'
+import { Order, getStatusDotColor } from '../../types'
 import { OrderCard } from './OrderCard'
 import { CardSkeleton } from '../ui/Skeleton'
 
@@ -15,6 +16,17 @@ interface Props {
 
 export function KanbanColumn({ status, orders, loading, onOrderClick }: Props) {
   const { setNodeRef, isOver } = useDroppable({ id: status })
+  const tStatus = useTranslations('statuses')
+  const tOrders = useTranslations('orders')
+
+  function getLabel(s: string): string {
+    try {
+      // next-intl throws if the key doesn't exist; fall back to the raw string
+      return tStatus(s as Parameters<typeof tStatus>[0])
+    } catch {
+      return s
+    }
+  }
 
   return (
     <div className="flex min-w-[284px] max-w-[284px] flex-col">
@@ -23,7 +35,7 @@ export function KanbanColumn({ status, orders, loading, onOrderClick }: Props) {
         <div className="flex items-center gap-2">
           <span className={`h-2 w-2 rounded-full ${getStatusDotColor(status)}`} />
           <span className="text-xs font-semibold uppercase tracking-wider text-slate-500">
-            {getStatusLabel(status)}
+            {getLabel(status)}
           </span>
         </div>
         <span className="rounded-full bg-white/[0.08] px-2 py-0.5 text-xs font-bold text-slate-400 ring-1 ring-white/[0.1]">
@@ -52,7 +64,7 @@ export function KanbanColumn({ status, orders, loading, onOrderClick }: Props) {
             </>
           ) : orders.length === 0 ? (
             <div className="flex flex-1 items-center justify-center py-12 text-xs text-slate-700">
-              No orders
+              {tOrders('noOrders')}
             </div>
           ) : (
             orders.map((order) => (

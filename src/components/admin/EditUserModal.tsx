@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { doc, updateDoc } from 'firebase/firestore'
+import { useTranslations } from 'next-intl'
 import { Modal } from '../ui/Modal'
 import { db } from '../../lib/firebase'
 import {
@@ -17,11 +18,7 @@ interface Props {
   onUpdated: () => void
 }
 
-const ROLE_OPTIONS: { value: Role; label: string }[] = [
-  { value: 'admin',   label: 'Admin' },
-  { value: 'manager', label: 'Manager' },
-  { value: 'viewer',  label: 'Viewer' },
-]
+const ROLE_OPTION_KEYS: Role[] = ['admin', 'manager', 'viewer']
 
 const ALL_PERMISSIONS: Permission[] = [
   'view_orders',
@@ -31,6 +28,10 @@ const ALL_PERMISSIONS: Permission[] = [
 ]
 
 export function EditUserModal({ user: targetUser, open, onClose, onUpdated }: Props) {
+  const t = useTranslations('users')
+  const tPerms = useTranslations('permissions')
+  const tRoles = useTranslations('roles')
+
   const [displayName, setDisplayName] = useState('')
   const [role, setRole] = useState<Role>('viewer')
   const [permissions, setPermissions] = useState<Permission[]>([])
@@ -73,14 +74,18 @@ export function EditUserModal({ user: targetUser, open, onClose, onUpdated }: Pr
     }
   }
 
+  function getRoleLabel(r: Role): string {
+    try { return tRoles(r as Parameters<typeof tRoles>[0]) } catch { return r }
+  }
+
   if (!targetUser) return null
 
   return (
-    <Modal open={open} onClose={onClose} title="Edit User" size="md">
+    <Modal open={open} onClose={onClose} title={t('editUser')} size="md">
       <div className="space-y-4">
         {/* Name */}
         <div>
-          <label className="mb-1.5 block text-sm font-semibold text-slate-400">Display Name</label>
+          <label className="mb-1.5 block text-sm font-semibold text-slate-400">{t('displayName')}</label>
           <input
             value={displayName}
             onChange={(e) => setDisplayName(e.target.value)}
@@ -90,7 +95,7 @@ export function EditUserModal({ user: targetUser, open, onClose, onUpdated }: Pr
 
         {/* Email (read-only) */}
         <div>
-          <label className="mb-1.5 block text-sm font-semibold text-slate-400">Email</label>
+          <label className="mb-1.5 block text-sm font-semibold text-slate-400">{t('email')}</label>
           <p className="rounded-xl border border-white/[0.06] bg-white/[0.03] px-3 py-2.5 text-sm text-slate-500">
             {targetUser.email}
           </p>
@@ -98,20 +103,20 @@ export function EditUserModal({ user: targetUser, open, onClose, onUpdated }: Pr
 
         {/* Role */}
         <div>
-          <label className="mb-2 block text-sm font-semibold text-slate-400">Role</label>
+          <label className="mb-2 block text-sm font-semibold text-slate-400">{t('role')}</label>
           <div className="grid grid-cols-3 gap-2">
-            {ROLE_OPTIONS.map(({ value, label }) => (
+            {ROLE_OPTION_KEYS.map((r) => (
               <button
-                key={value}
+                key={r}
                 type="button"
-                onClick={() => handleRoleChange(value)}
+                onClick={() => handleRoleChange(r)}
                 className={`rounded-xl border p-3 text-center text-sm font-semibold transition-all ${
-                  role === value
+                  role === r
                     ? 'border-indigo-500/50 bg-indigo-500/10 text-indigo-300'
                     : 'border-white/[0.1] bg-white/[0.04] text-slate-400 hover:border-white/[0.15] hover:text-slate-300'
                 }`}
               >
-                {label}
+                {getRoleLabel(r)}
               </button>
             ))}
           </div>
@@ -119,11 +124,13 @@ export function EditUserModal({ user: targetUser, open, onClose, onUpdated }: Pr
 
         {/* Permissions */}
         <div>
-          <label className="mb-2 block text-sm font-semibold text-slate-400">Permissions</label>
+          <label className="mb-2 block text-sm font-semibold text-slate-400">{t('permissions')}</label>
           <div className="space-y-2">
             {ALL_PERMISSIONS.map((p) => {
               const isLocked = lockedOff.includes(p)
               const isChecked = permissions.includes(p)
+              let label = PERMISSION_LABELS[p]
+              try { label = tPerms(p as Parameters<typeof tPerms>[0]) } catch { /* use default */ }
               return (
                 <label
                   key={p}
@@ -140,8 +147,8 @@ export function EditUserModal({ user: targetUser, open, onClose, onUpdated }: Pr
                     onChange={() => togglePermission(p)}
                     className="h-4 w-4 rounded border-white/20 bg-white/10 accent-indigo-500 disabled:cursor-not-allowed"
                   />
-                  <span className="text-sm text-slate-300">{PERMISSION_LABELS[p]}</span>
-                  {isLocked && <span className="ml-auto text-[10px] text-slate-600">locked</span>}
+                  <span className="text-sm text-slate-300">{label}</span>
+                  {isLocked && <span className="ms-auto text-[10px] text-slate-600">{t('locked')}</span>}
                 </label>
               )
             })}
@@ -150,7 +157,7 @@ export function EditUserModal({ user: targetUser, open, onClose, onUpdated }: Pr
 
         {/* Status */}
         <div>
-          <label className="mb-2 block text-sm font-semibold text-slate-400">Account Status</label>
+          <label className="mb-2 block text-sm font-semibold text-slate-400">{t('status')}</label>
           <div className="grid grid-cols-2 gap-2">
             {(['active', 'suspended'] as const).map((s) => (
               <button
@@ -165,7 +172,7 @@ export function EditUserModal({ user: targetUser, open, onClose, onUpdated }: Pr
                     : 'border-white/[0.1] bg-white/[0.04] text-slate-400 hover:border-white/[0.15]'
                 }`}
               >
-                {s}
+                {s === 'active' ? t('active') : t('suspended')}
               </button>
             ))}
           </div>
@@ -177,14 +184,14 @@ export function EditUserModal({ user: targetUser, open, onClose, onUpdated }: Pr
             onClick={onClose}
             className="rounded-xl border border-white/[0.1] px-4 py-2 text-sm font-semibold text-slate-400 transition-colors hover:bg-white/[0.06] hover:text-slate-200"
           >
-            Cancel
+            {t('cancel')}
           </button>
           <button
             onClick={handleSave}
             disabled={saving}
             className="rounded-xl bg-indigo-600 px-5 py-2 text-sm font-semibold text-white shadow-lg shadow-indigo-600/25 transition-colors hover:bg-indigo-500 disabled:opacity-50"
           >
-            {saving ? 'Saving…' : 'Save Changes'}
+            {saving ? t('saving') : t('saveChanges')}
           </button>
         </div>
       </div>

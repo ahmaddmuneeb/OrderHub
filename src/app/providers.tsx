@@ -4,6 +4,7 @@ import { useEffect } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
 import { onAuthStateChanged } from 'firebase/auth'
 import { Toaster } from 'sonner'
+import { NextIntlClientProvider } from 'next-intl'
 import { auth } from '../lib/firebase'
 import { useAuthStore } from '../store/useAuthStore'
 import { useUserProfile } from '../hooks/useUserProfile'
@@ -15,7 +16,13 @@ function ProfileLoader() {
   return null
 }
 
-export function Providers({ children }: { children: React.ReactNode }) {
+interface ProvidersProps {
+  children: React.ReactNode
+  locale: string
+  messages: Record<string, unknown>
+}
+
+export function Providers({ children, locale, messages }: ProvidersProps) {
   const { setUser, setLoading, user, loading } = useAuthStore()
   const router = useRouter()
   const pathname = usePathname()
@@ -44,10 +51,10 @@ export function Providers({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <>
+    <NextIntlClientProvider locale={locale} messages={messages}>
       <ProfileLoader />
       {children}
       <Toaster richColors theme="dark" position="top-right" />
-    </>
+    </NextIntlClientProvider>
   )
 }

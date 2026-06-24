@@ -12,6 +12,7 @@ import {
   closestCenter,
   DragOverlay,
 } from '@dnd-kit/core'
+import { useTranslations } from 'next-intl'
 import { callUpdateOrderStatus } from '../lib/firebase'
 import { useOrders } from '../hooks/useOrders'
 import { useOrderStore } from '../store/useOrderStore'
@@ -27,11 +28,8 @@ import { toast } from 'sonner'
 import { Store as StoreIcon, RefreshCw, Plus, ShoppingBag, ShoppingCart, Package } from 'lucide-react'
 import Link from 'next/link'
 
-/* ─── Platform tab definitions ─── */
-
 const PLATFORM_TABS: {
   value: Platform
-  label: string
   icon: React.ElementType
   activeText: string
   activeBorder: string
@@ -39,7 +37,6 @@ const PLATFORM_TABS: {
 }[] = [
   {
     value: 'shopify',
-    label: 'Shopify',
     icon: ShoppingBag,
     activeText: 'text-emerald-400',
     activeBorder: 'border-emerald-500',
@@ -47,7 +44,6 @@ const PLATFORM_TABS: {
   },
   {
     value: 'woocommerce',
-    label: 'WooCommerce',
     icon: ShoppingCart,
     activeText: 'text-violet-400',
     activeBorder: 'border-violet-500',
@@ -55,7 +51,6 @@ const PLATFORM_TABS: {
   },
   {
     value: 'bigcommerce',
-    label: 'BigCommerce',
     icon: Package,
     activeText: 'text-blue-400',
     activeBorder: 'border-blue-500',
@@ -63,9 +58,8 @@ const PLATFORM_TABS: {
   },
 ]
 
-/* ─── Component ─── */
-
 export function DashboardPage() {
+  const t = useTranslations('dashboard')
   const { filteredOrders, updateOrderStatus, setSelectedOrderId, selectedOrderId, orders } =
     useOrderStore()
   const { stores, storesLoading } = useStoreStore()
@@ -79,7 +73,6 @@ export function DashboardPage() {
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
   )
 
-  /* Derived data */
   const platformStores = stores.filter((s) => s.platform === activePlatform)
   const selectedStore   = platformStores.find((s) => s.id === selectedStoreId) ?? null
 
@@ -100,7 +93,6 @@ export function DashboardPage() {
     setSelectedStoreId(null)
   }
 
-  /* Drag handlers */
   function handleDragStart(e: DragStartEvent) {
     setActiveOrder(orders.find((o) => o.id === e.active.id) ?? null)
   }
@@ -135,32 +127,27 @@ export function DashboardPage() {
     }
   }
 
-  /* ── Loading ── */
   if (storesLoading) return <DashboardSkeleton />
 
-  /* ── No stores at all ── */
   if (stores.length === 0) {
     return (
       <div className="flex flex-1 flex-col items-center justify-center px-4 text-center bg-slate-950">
         <div className="mb-5 flex h-20 w-20 items-center justify-center rounded-3xl bg-white/[0.06] ring-1 ring-white/[0.08]">
           <StoreIcon size={32} className="text-slate-500" />
         </div>
-        <h2 className="text-xl font-bold tracking-tight text-white">No stores connected</h2>
-        <p className="mt-2 max-w-sm text-sm text-slate-400 leading-relaxed">
-          Connect your Shopify, WooCommerce, or BigCommerce store to start managing orders from one place.
-        </p>
+        <h2 className="text-xl font-bold tracking-tight text-white">{t('noStoresTitle')}</h2>
+        <p className="mt-2 max-w-sm text-sm text-slate-400 leading-relaxed">{t('noStoresDesc')}</p>
         <Link
           href="/settings/stores"
           className="mt-7 flex items-center gap-2 rounded-xl bg-indigo-600 px-6 py-2.5 text-sm font-semibold text-white shadow-lg shadow-indigo-600/25 hover:bg-indigo-500 transition-all duration-150"
         >
           <Plus size={15} />
-          Connect a Store
+          {t('connectStore')}
         </Link>
       </div>
     )
   }
 
-  /* ── Main layout ── */
   return (
     <div className="flex flex-1 flex-col overflow-hidden">
 
@@ -179,9 +166,9 @@ export function DashboardPage() {
               <div className="mt-1.5 h-3 w-28 animate-pulse rounded-full bg-white/[0.08]" />
             ) : (
               <p className="mt-0.5 text-sm text-slate-500">
-                {displayOrders.length} order{displayOrders.length !== 1 ? 's' : ''}
+                {displayOrders.length} {displayOrders.length !== 1 ? t('orders') : t('order')}
                 {platformStores.length > 1 && !selectedStore
-                  ? ` across ${platformStores.length} stores`
+                  ? ' ' + t('acrossStores', { count: platformStores.length })
                   : ''}
               </p>
             )}
@@ -192,13 +179,13 @@ export function DashboardPage() {
             className="flex items-center gap-1.5 rounded-xl border border-white/[0.1] bg-white/[0.06] px-3.5 py-2 text-xs font-semibold text-slate-300 hover:bg-white/[0.1] hover:text-white disabled:opacity-40 transition-all duration-150"
           >
             <RefreshCw size={12} className={loading ? 'animate-spin text-indigo-400' : ''} />
-            Refresh
+            {t('refresh')}
           </button>
         </div>
 
         {/* ── Platform tabs ── */}
         <div className="flex border-b border-white/[0.06] px-6 mt-1">
-          {PLATFORM_TABS.map(({ value, label, icon: Icon, activeText, activeBorder, activeBadge }) => {
+          {PLATFORM_TABS.map(({ value, icon: Icon, activeText, activeBorder, activeBadge }) => {
             const active = activePlatform === value
             const count  = orders.filter((o) => o.platform === value).length
             return (
@@ -212,7 +199,7 @@ export function DashboardPage() {
                 }`}
               >
                 <Icon size={13} className="shrink-0" />
-                {label}
+                {PLATFORM_LABELS[value]}
                 <span
                   className={`rounded-full px-1.5 py-px text-[10px] font-bold transition-all ${
                     active ? activeBadge : 'bg-white/[0.06] text-slate-600'
@@ -225,7 +212,7 @@ export function DashboardPage() {
           })}
         </div>
 
-        {/* ── Per-store sub-tabs (only if platform has 2+ stores) ── */}
+        {/* ── Per-store sub-tabs ── */}
         {platformStores.length > 1 && (
           <div className="flex items-center gap-1 overflow-x-auto px-6 pt-3 pb-2">
             <div className="flex items-center gap-1 rounded-xl bg-white/[0.05] p-1">
@@ -237,7 +224,7 @@ export function DashboardPage() {
                     : 'text-slate-500 hover:text-slate-300'
                 }`}
               >
-                All {PLATFORM_LABELS[activePlatform]}
+                {t('allPlatform', { platform: PLATFORM_LABELS[activePlatform] })}
               </button>
               {platformStores.map((store) => (
                 <button
@@ -257,7 +244,7 @@ export function DashboardPage() {
           </div>
         )}
 
-        {/* ── Stats + filters (only when platform has stores) ── */}
+        {/* ── Stats + filters ── */}
         {platformStores.length > 0 && (
           <div className="space-y-3 px-6 pb-4 pt-3">
             <StatsBar orders={displayOrders} loading={loading} platform={activePlatform} />
@@ -268,8 +255,6 @@ export function DashboardPage() {
 
       {/* ══ Body ══ */}
       {platformStores.length === 0 ? (
-
-        /* Empty state: no stores for this platform */
         <div className="flex flex-1 flex-col items-center justify-center px-4 text-center bg-slate-950">
           <div className="mb-5 flex h-20 w-20 items-center justify-center rounded-3xl bg-white/[0.06] ring-1 ring-white/[0.08]">
             {(() => {
@@ -278,23 +263,20 @@ export function DashboardPage() {
             })()}
           </div>
           <h2 className="text-lg font-bold tracking-tight text-white">
-            No {PLATFORM_LABELS[activePlatform]} stores connected
+            {t('noPlatformStores', { platform: PLATFORM_LABELS[activePlatform] })}
           </h2>
           <p className="mt-2 max-w-xs text-sm text-slate-400 leading-relaxed">
-            Connect a {PLATFORM_LABELS[activePlatform]} store to see and manage its orders here.
+            {t('noPlatformStoresDesc', { platform: PLATFORM_LABELS[activePlatform] })}
           </p>
           <Link
             href="/settings/stores"
             className="mt-6 flex items-center gap-2 rounded-xl bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white shadow-lg shadow-indigo-600/25 hover:bg-indigo-500 transition-all duration-150"
           >
             <Plus size={14} />
-            Connect {PLATFORM_LABELS[activePlatform]}
+            {t('connectPlatform', { platform: PLATFORM_LABELS[activePlatform] })}
           </Link>
         </div>
-
       ) : (
-
-        /* Kanban board */
         <div className="scrollbar-thin flex-1 overflow-x-auto bg-slate-950 p-5">
           <DndContext
             sensors={sensors}
@@ -315,7 +297,7 @@ export function DashboardPage() {
               ))}
               {!loading && displayOrders.length === 0 && (
                 <div className="flex flex-1 items-center justify-center text-sm text-slate-600">
-                  No orders match the current filters
+                  {t('noResults')}
                 </div>
               )}
             </div>

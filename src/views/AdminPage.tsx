@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { collection, onSnapshot, deleteDoc, doc, query, orderBy } from 'firebase/firestore'
+import { useTranslations } from 'next-intl'
 import { db } from '../lib/firebase'
 import { useAuthStore } from '../store/useAuthStore'
 import { useIsSuperAdmin } from '../hooks/useUserProfile'
@@ -15,14 +16,19 @@ import { toast } from 'sonner'
 
 type AdminTab = 'users' | 'roles'
 
-const ROLE_BADGE: Record<string, { label: string; cls: string }> = {
-  super_admin: { label: 'Super Admin', cls: 'bg-violet-500/15 text-violet-400 border border-violet-500/25' },
-  admin:       { label: 'Admin',       cls: 'bg-indigo-500/15 text-indigo-400 border border-indigo-500/25' },
-  manager:     { label: 'Manager',     cls: 'bg-amber-500/15 text-amber-400 border border-amber-500/25' },
-  viewer:      { label: 'Viewer',      cls: 'bg-slate-500/15 text-slate-400 border border-slate-500/25' },
+const ROLE_BADGE: Record<string, { cls: string }> = {
+  super_admin: { cls: 'bg-violet-500/15 text-violet-400 border border-violet-500/25' },
+  admin:       { cls: 'bg-indigo-500/15 text-indigo-400 border border-indigo-500/25' },
+  manager:     { cls: 'bg-amber-500/15 text-amber-400 border border-amber-500/25' },
+  viewer:      { cls: 'bg-slate-500/15 text-slate-400 border border-slate-500/25' },
 }
 
 export function AdminPage() {
+  const t = useTranslations('admin')
+  const tRoles = useTranslations('roles')
+  const tUsers = useTranslations('users')
+  const tPerms = useTranslations('permissions')
+
   const isSuperAdmin = useIsSuperAdmin()
   const { user: authUser } = useAuthStore()
   const [tab, setTab] = useState<AdminTab>('users')
@@ -55,14 +61,23 @@ export function AdminPage() {
     }
   }
 
+  function getRoleLabel(role: string): string {
+    const key = role as 'super_admin' | 'admin' | 'manager' | 'viewer'
+    try { return tRoles(key) } catch { return role }
+  }
+
+  function getPermLabel(p: string): string {
+    try { return tPerms(p as Parameters<typeof tPerms>[0]) } catch { return PERMISSION_LABELS[p as Permission] ?? p }
+  }
+
   if (!isSuperAdmin) {
     return (
       <div className="flex flex-col items-center justify-center py-24 text-center">
         <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-rose-500/10 ring-1 ring-rose-500/20">
           <AlertCircle size={22} className="text-rose-400" />
         </div>
-        <p className="text-base font-semibold text-slate-300">Access Denied</p>
-        <p className="mt-1 text-sm text-slate-600">Super admin privileges required.</p>
+        <p className="text-base font-semibold text-slate-300">{t('accessDenied')}</p>
+        <p className="mt-1 text-sm text-slate-600">{t('accessDeniedDesc')}</p>
       </div>
     )
   }
@@ -80,7 +95,7 @@ export function AdminPage() {
           }`}
         >
           <Users size={13} />
-          User Management
+          {t('tabs.users')}
         </button>
         <button
           onClick={() => setTab('roles')}
@@ -91,7 +106,7 @@ export function AdminPage() {
           }`}
         >
           <Lock size={13} />
-          Roles &amp; Permissions
+          {t('tabs.roles')}
         </button>
       </div>
 
@@ -102,15 +117,15 @@ export function AdminPage() {
           {/* Header */}
           <div className="flex items-center justify-between border-b border-white/[0.06] px-8 py-5">
             <div>
-              <h1 className="text-lg font-bold text-slate-100">User Management</h1>
-              <p className="mt-0.5 text-sm text-slate-500">Create and manage users, roles, and permissions</p>
+              <h1 className="text-lg font-bold text-slate-100">{t('userManagement')}</h1>
+              <p className="mt-0.5 text-sm text-slate-500">{t('userManagementDesc')}</p>
             </div>
             <button
               onClick={() => setCreateOpen(true)}
               className="flex items-center gap-2 rounded-xl bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-indigo-600/25 transition-colors hover:bg-indigo-500"
             >
               <UserPlus size={14} />
-              Create User
+              {t('createUser')}
             </button>
           </div>
 
@@ -127,8 +142,8 @@ export function AdminPage() {
                 <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-white/[0.04] ring-1 ring-white/[0.08]">
                   <Shield size={22} className="text-slate-600" />
                 </div>
-                <p className="text-sm font-semibold text-slate-400">No users yet</p>
-                <p className="mt-1 text-xs text-slate-600">Create your first user to get started</p>
+                <p className="text-sm font-semibold text-slate-400">{t('noUsersTitle')}</p>
+                <p className="mt-1 text-xs text-slate-600">{t('noUsersDesc')}</p>
               </div>
             )}
 
@@ -155,16 +170,16 @@ export function AdminPage() {
                             {u.displayName || u.email.split('@')[0]}
                           </p>
                           <span className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide ${badge.cls}`}>
-                            {badge.label}
+                            {getRoleLabel(u.role)}
                           </span>
                           {isSelf && (
                             <span className="shrink-0 rounded-full border border-white/10 px-2 py-0.5 text-[10px] text-slate-600">
-                              you
+                              {tUsers('you')}
                             </span>
                           )}
                           {u.status === 'suspended' && (
                             <span className="shrink-0 rounded-full bg-rose-500/10 border border-rose-500/20 px-2 py-0.5 text-[10px] font-semibold text-rose-400">
-                              suspended
+                              {tUsers('suspended')}
                             </span>
                           )}
                         </div>
@@ -173,7 +188,7 @@ export function AdminPage() {
                           <div className="mt-1.5 flex flex-wrap gap-1">
                             {u.permissions.map((p) => (
                               <span key={p} className="rounded-md bg-white/[0.05] px-1.5 py-0.5 text-[10px] text-slate-500">
-                                {PERMISSION_LABELS[p as Permission] ?? p}
+                                {getPermLabel(p)}
                               </span>
                             ))}
                           </div>
@@ -185,7 +200,7 @@ export function AdminPage() {
                           <button
                             onClick={() => setEditTarget(u)}
                             className="rounded-lg p-2 text-slate-600 transition-colors hover:bg-white/[0.06] hover:text-slate-300"
-                            title="Edit user"
+                            title={tUsers('editUser')}
                           >
                             <Pencil size={13} />
                           </button>

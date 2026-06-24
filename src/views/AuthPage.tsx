@@ -7,10 +7,12 @@ import {
   signInWithPopup,
 } from 'firebase/auth'
 import { auth, googleProvider } from '../lib/firebase'
+import { useTranslations } from 'next-intl'
 import { toast } from 'sonner'
 import { ShoppingBag, ArrowRight } from 'lucide-react'
 
 export function AuthPage() {
+  const t = useTranslations('auth')
   const [mode, setMode] = useState<'login' | 'register'>('login')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -44,6 +46,8 @@ export function AuthPage() {
     }
   }
 
+  const features = [t('feature1'), t('feature2'), t('feature3')]
+
   return (
     <div className="flex min-h-screen bg-slate-950">
       {/* Left panel */}
@@ -59,11 +63,7 @@ export function AuthPage() {
             "Manage all your e-commerce orders from one unified dashboard."
           </blockquote>
           <div className="mt-8 space-y-3">
-            {[
-              'Shopify, WooCommerce & BigCommerce',
-              'Real-time order kanban board',
-              'Push status updates to platforms',
-            ].map((f) => (
+            {features.map((f) => (
               <div key={f} className="flex items-center gap-2.5 text-indigo-100">
                 <div className="h-1.5 w-1.5 rounded-full bg-indigo-300" />
                 <span className="text-sm">{f}</span>
@@ -85,12 +85,10 @@ export function AuthPage() {
           </div>
 
           <h2 className="text-2xl font-bold text-white">
-            {mode === 'login' ? 'Welcome back' : 'Create your account'}
+            {mode === 'login' ? t('welcomeBack') : t('createAccount')}
           </h2>
           <p className="mt-1.5 text-sm text-slate-400">
-            {mode === 'login'
-              ? 'Sign in to access your dashboard'
-              : 'Start managing orders across all platforms'}
+            {mode === 'login' ? t('signInDesc') : t('createAccountDesc')}
           </p>
 
           {/* Google */}
@@ -106,18 +104,18 @@ export function AuthPage() {
               <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
               <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
             </svg>
-            Continue with Google
+            {t('continueWithGoogle')}
           </button>
 
           <div className="my-6 flex items-center gap-3">
             <hr className="flex-1 border-slate-700" />
-            <span className="text-xs text-slate-600">or</span>
+            <span className="text-xs text-slate-600">{t('or')}</span>
             <hr className="flex-1 border-slate-700" />
           </div>
 
           <form onSubmit={handleEmailAuth} className="space-y-4">
             <div>
-              <label className="mb-1.5 block text-xs font-medium text-slate-400">Email</label>
+              <label className="mb-1.5 block text-xs font-medium text-slate-400">{t('email')}</label>
               <input
                 type="email"
                 required
@@ -129,7 +127,7 @@ export function AuthPage() {
               />
             </div>
             <div>
-              <label className="mb-1.5 block text-xs font-medium text-slate-400">Password</label>
+              <label className="mb-1.5 block text-xs font-medium text-slate-400">{t('password')}</label>
               <input
                 type="password"
                 required
@@ -146,18 +144,18 @@ export function AuthPage() {
               className="flex w-full items-center justify-center gap-2 rounded-xl bg-indigo-600 py-2.5 text-sm font-semibold text-white
                          hover:bg-indigo-500 disabled:opacity-60 transition-colors"
             >
-              {loading ? 'Please wait…' : mode === 'login' ? 'Sign In' : 'Create Account'}
+              {loading ? t('pleaseWait') : mode === 'login' ? t('signIn') : t('createAccountBtn')}
               {!loading && <ArrowRight size={14} />}
             </button>
           </form>
 
           <p className="mt-6 text-center text-sm text-slate-500">
-            {mode === 'login' ? "Don't have an account? " : 'Already have an account? '}
+            {mode === 'login' ? t('noAccount') + ' ' : t('haveAccount') + ' '}
             <button
               onClick={() => setMode(mode === 'login' ? 'register' : 'login')}
               className="font-semibold text-indigo-400 hover:text-indigo-300 transition-colors"
             >
-              {mode === 'login' ? 'Sign up' : 'Sign in'}
+              {mode === 'login' ? t('signUp') : t('signInLink')}
             </button>
           </p>
         </div>

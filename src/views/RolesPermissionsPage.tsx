@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { collection, onSnapshot, deleteDoc, doc, query, orderBy } from 'firebase/firestore'
+import { useTranslations } from 'next-intl'
 import { db } from '../lib/firebase'
 import { RoleModal } from '../components/admin/RoleModal'
 import { PermissionModal } from '../components/admin/PermissionModal'
@@ -14,36 +15,40 @@ import { toast } from 'sonner'
 
 type Tab = 'roles' | 'permissions'
 
-const ROLE_DESCRIPTIONS: Record<Role, string> = {
-  super_admin: 'Unrestricted access to all features and settings',
-  admin: 'Full access to all features except user management',
-  manager: 'Orders and analytics access, no store management',
-  viewer: 'Read-only access to orders and analytics',
-}
-
-const SYSTEM_ROLES: RoleDefinition[] = (
-  Object.entries(ROLE_DEFAULT_PERMISSIONS) as [Role, Permission[]][]
-).map(([key, perms]) => ({
-  id: key,
-  name: key.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase()),
-  description: ROLE_DESCRIPTIONS[key as Role],
-  permissions: perms,
-  isSystem: true,
-  createdAt: null as never,
-}))
-
-const SYSTEM_PERMISSIONS: PermissionDefinition[] = (
-  Object.entries(PERMISSION_LABELS) as [Permission, string][]
-).map(([key, label]) => ({
-  id: key,
-  key,
-  label,
-  description: '',
-  isSystem: true,
-  createdAt: null as never,
-}))
-
 export function RolesPermissionsPage() {
+  const t = useTranslations('rolesPermissions')
+  const tRoles = useTranslations('roles')
+  const tPerms = useTranslations('permissions')
+
+  const ROLE_DESCRIPTIONS: Record<Role, string> = {
+    super_admin: tRoles('superAdminDesc'),
+    admin: tRoles('adminDesc'),
+    manager: tRoles('managerDesc'),
+    viewer: tRoles('viewerDesc'),
+  }
+
+  const SYSTEM_ROLES: RoleDefinition[] = (
+    Object.entries(ROLE_DEFAULT_PERMISSIONS) as [Role, Permission[]][]
+  ).map(([key, perms]) => ({
+    id: key,
+    name: (() => { try { return tRoles(key as Parameters<typeof tRoles>[0]) } catch { return key } })(),
+    description: ROLE_DESCRIPTIONS[key as Role],
+    permissions: perms,
+    isSystem: true,
+    createdAt: null as never,
+  }))
+
+  const SYSTEM_PERMISSIONS: PermissionDefinition[] = (
+    Object.entries(PERMISSION_LABELS) as [Permission, string][]
+  ).map(([key]) => ({
+    id: key,
+    key,
+    label: (() => { try { return tPerms(key as Parameters<typeof tPerms>[0]) } catch { return PERMISSION_LABELS[key] } })(),
+    description: '',
+    isSystem: true,
+    createdAt: null as never,
+  }))
+
   const [tab, setTab] = useState<Tab>('roles')
   const [customRoles, setCustomRoles] = useState<RoleDefinition[]>([])
   const [customPerms, setCustomPerms] = useState<PermissionDefinition[]>([])
@@ -110,10 +115,8 @@ export function RolesPermissionsPage() {
       {/* Header */}
       <div className="flex items-center justify-between border-b border-white/[0.06] px-8 py-5">
         <div>
-          <h1 className="text-lg font-bold text-slate-100">Roles &amp; Permissions</h1>
-          <p className="mt-0.5 text-sm text-slate-500">
-            Define custom roles and permissions for granular access control
-          </p>
+          <h1 className="text-lg font-bold text-slate-100">{t('title')}</h1>
+          <p className="mt-0.5 text-sm text-slate-500">{t('desc')}</p>
         </div>
         <button
           onClick={() => {
@@ -123,24 +126,24 @@ export function RolesPermissionsPage() {
           className="flex items-center gap-2 rounded-xl bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-indigo-600/25 transition-colors hover:bg-indigo-500"
         >
           <Plus size={14} />
-          {tab === 'roles' ? 'New Role' : 'New Permission'}
+          {tab === 'roles' ? t('newRole') : t('newPermission')}
         </button>
       </div>
 
       {/* Tabs */}
       <div className="flex gap-1 border-b border-white/[0.06] px-8">
-        {(['roles', 'permissions'] as Tab[]).map((t) => (
+        {(['roles', 'permissions'] as Tab[]).map((tabKey) => (
           <button
-            key={t}
-            onClick={() => setTab(t)}
+            key={tabKey}
+            onClick={() => setTab(tabKey)}
             className={`flex items-center gap-1.5 px-4 py-3 text-sm font-semibold capitalize transition-colors border-b-2 -mb-px ${
-              tab === t
+              tab === tabKey
                 ? 'border-indigo-500 text-indigo-400'
                 : 'border-transparent text-slate-500 hover:text-slate-300'
             }`}
           >
-            {t === 'roles' ? <Shield size={13} /> : <Key size={13} />}
-            {t}
+            {tabKey === 'roles' ? <Shield size={13} /> : <Key size={13} />}
+            {t(`tabs.${tabKey}` as Parameters<typeof t>[0])}
           </button>
         ))}
       </div>
@@ -163,7 +166,7 @@ export function RolesPermissionsPage() {
                     <p className="text-sm font-semibold text-slate-200">{role.name}</p>
                     {role.isSystem && (
                       <span className="flex items-center gap-1 rounded-full border border-white/10 px-2 py-0.5 text-[10px] text-slate-600">
-                        <Lock size={9} /> system
+                        <Lock size={9} /> {t('system')}
                       </span>
                     )}
                   </div>
@@ -173,17 +176,14 @@ export function RolesPermissionsPage() {
                   {role.permissions.length > 0 && (
                     <div className="mt-2 flex flex-wrap gap-1">
                       {role.permissions.map((p) => (
-                        <span
-                          key={p}
-                          className="rounded-md bg-white/[0.05] px-1.5 py-0.5 text-[10px] text-slate-500"
-                        >
+                        <span key={p} className="rounded-md bg-white/[0.05] px-1.5 py-0.5 text-[10px] text-slate-500">
                           {permLabelMap[p] ?? p}
                         </span>
                       ))}
                     </div>
                   )}
                   {role.permissions.length === 0 && (
-                    <p className="mt-1.5 text-[11px] text-slate-700">No permissions assigned</p>
+                    <p className="mt-1.5 text-[11px] text-slate-700">{t('noPermissions')}</p>
                   )}
                 </div>
 
@@ -192,7 +192,6 @@ export function RolesPermissionsPage() {
                     <button
                       onClick={() => { setEditRole(role); setRoleModalOpen(true) }}
                       className="rounded-lg p-2 text-slate-600 transition-colors hover:bg-white/[0.06] hover:text-slate-300"
-                      title="Edit role"
                     >
                       <Pencil size={13} />
                     </button>
@@ -200,7 +199,6 @@ export function RolesPermissionsPage() {
                       onClick={() => handleDeleteRole(role)}
                       disabled={deletingId === role.id}
                       className="rounded-lg p-2 text-slate-600 transition-colors hover:bg-rose-500/10 hover:text-rose-400 disabled:opacity-40"
-                      title="Delete role"
                     >
                       <Trash2 size={13} />
                     </button>
@@ -230,7 +228,7 @@ export function RolesPermissionsPage() {
                     </code>
                     {perm.isSystem && (
                       <span className="flex items-center gap-1 rounded-full border border-white/10 px-2 py-0.5 text-[10px] text-slate-600">
-                        <Lock size={9} /> system
+                        <Lock size={9} /> {t('system')}
                       </span>
                     )}
                   </div>
@@ -244,7 +242,6 @@ export function RolesPermissionsPage() {
                     <button
                       onClick={() => { setEditPerm(perm); setPermModalOpen(true) }}
                       className="rounded-lg p-2 text-slate-600 transition-colors hover:bg-white/[0.06] hover:text-slate-300"
-                      title="Edit permission"
                     >
                       <Pencil size={13} />
                     </button>
@@ -252,7 +249,6 @@ export function RolesPermissionsPage() {
                       onClick={() => handleDeletePerm(perm)}
                       disabled={deletingId === perm.id}
                       className="rounded-lg p-2 text-slate-600 transition-colors hover:bg-rose-500/10 hover:text-rose-400 disabled:opacity-40"
-                      title="Delete permission"
                     >
                       <Trash2 size={13} />
                     </button>

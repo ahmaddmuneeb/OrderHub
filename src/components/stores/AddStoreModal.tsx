@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore'
+import { useTranslations } from 'next-intl'
 import { db } from '../../lib/firebase'
 import { useAuthStore } from '../../store/useAuthStore'
 import { Modal } from '../ui/Modal'
@@ -51,6 +52,7 @@ function requiredKeys(platform: Platform): (keyof StoreCredentials)[] {
 }
 
 export function AddStoreModal({ open, onClose }: Props) {
+  const t = useTranslations('stores')
   const { user } = useAuthStore()
   const [platform, setPlatform] = useState<Platform>('shopify')
   const [storeName, setStoreName] = useState('')
@@ -108,12 +110,12 @@ export function AddStoreModal({ open, onClose }: Props) {
   const fields = PLATFORM_FIELDS[platform]
 
   return (
-    <Modal open={open} onClose={handleClose} title="Connect a Store" size="md">
+    <Modal open={open} onClose={handleClose} title={t('connectStore')} size="md">
       <div className="space-y-4">
 
         {/* Platform picker */}
         <Dropdown
-          label="Platform"
+          label={t('platform')}
           value={platform}
           onChange={(v) => { setPlatform(v as Platform); setCreds({}) }}
           options={[
@@ -128,7 +130,7 @@ export function AddStoreModal({ open, onClose }: Props) {
           <div className="flex gap-2">
             <Info size={13} className="mt-0.5 shrink-0" />
             <div>
-              <p className="font-semibold mb-0.5">Where to find credentials</p>
+              <p className="font-semibold mb-0.5">{t('credentialsHint')}</p>
               <p className="leading-relaxed text-indigo-400">{PLATFORM_HELP[platform].steps}</p>
               {PLATFORM_HELP[platform].note && (
                 <p className="mt-1.5 rounded-lg bg-amber-500/10 border border-amber-500/20 px-2 py-1 text-amber-400 font-medium">
@@ -142,7 +144,7 @@ export function AddStoreModal({ open, onClose }: Props) {
         {/* Display name */}
         <div>
           <label className="mb-1.5 block text-sm font-semibold text-slate-400">
-            Display Name <span className="font-normal text-slate-600">(optional)</span>
+            {t('displayName')} <span className="font-normal text-slate-600">({t('displayNameOptional')})</span>
           </label>
           <input
             value={storeName}
@@ -173,14 +175,14 @@ export function AddStoreModal({ open, onClose }: Props) {
             onClick={handleClose}
             className="rounded-xl border border-white/[0.1] px-4 py-2 text-sm font-semibold text-slate-400 hover:bg-white/[0.06] hover:text-slate-200 transition-colors"
           >
-            Cancel
+            {t('cancel')}
           </button>
           <button
             onClick={handleSave}
             disabled={saving || !isFormValid()}
             className="rounded-xl bg-indigo-600 px-5 py-2 text-sm font-semibold text-white shadow-lg shadow-indigo-600/25 hover:bg-indigo-500 disabled:opacity-50 transition-colors"
           >
-            {saving ? 'Connecting…' : 'Connect Store'}
+            {saving ? t('connecting') : t('connectBtn')}
           </button>
         </div>
       </div>

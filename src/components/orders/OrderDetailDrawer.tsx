@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { useTranslations } from 'next-intl'
 import { callUpdateOrderStatus } from '../../lib/firebase'
 import { useOrderStore } from '../../store/useOrderStore'
 import { useStoreStore } from '../../store/useStoreStore'
@@ -28,6 +29,7 @@ function DetailRow({ label, value }: { label: string; value: React.ReactNode }) 
 }
 
 export function OrderDetailDrawer({ orderId, onClose }: Props) {
+  const t = useTranslations('orders')
   const { orders, updateOrderStatus } = useOrderStore()
   const { stores } = useStoreStore()
   const order = orders.find((o) => o.id === orderId) ?? null
@@ -91,21 +93,21 @@ export function OrderDetailDrawer({ orderId, onClose }: Props) {
                 href={order.platformOrderUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="ml-auto flex items-center gap-1.5 rounded-xl border border-white/[0.1] bg-white/[0.06] px-3 py-1.5 text-xs font-semibold text-slate-300 hover:bg-white/[0.1] hover:text-white transition-colors"
+                className="ms-auto flex items-center gap-1.5 rounded-xl border border-white/[0.1] bg-white/[0.06] px-3 py-1.5 text-xs font-semibold text-slate-300 hover:bg-white/[0.1] hover:text-white transition-colors"
               >
                 <ExternalLink size={12} />
-                View on {PLATFORM_LABELS[order.platform]}
+                {t('viewOn', { platform: PLATFORM_LABELS[order.platform] })}
               </a>
             )}
           </div>
 
           {/* Status badges grid */}
           <section className="rounded-2xl bg-white/[0.04] ring-1 ring-white/[0.07] p-4">
-            <p className="mb-3 text-[11px] font-bold uppercase tracking-wider text-slate-500">Order Status</p>
+            <p className="mb-3 text-[11px] font-bold uppercase tracking-wider text-slate-500">{t('orderStatus')}</p>
             <div className="grid grid-cols-2 gap-2">
               {order.financialStatus && (
                 <div className="rounded-xl bg-white/[0.05] ring-1 ring-white/[0.07] p-3">
-                  <p className="mb-1.5 text-[10px] font-bold uppercase tracking-wider text-slate-500">Payment</p>
+                  <p className="mb-1.5 text-[10px] font-bold uppercase tracking-wider text-slate-500">{t('payment')}</p>
                   <span className={`inline-flex rounded-full border px-2.5 py-1 text-xs font-semibold ${getStatusBadgeClass(order.financialStatus)}`}>
                     {getStatusLabel(order.financialStatus)}
                   </span>
@@ -113,7 +115,7 @@ export function OrderDetailDrawer({ orderId, onClose }: Props) {
               )}
               {order.fulfillmentStatus && (
                 <div className="rounded-xl bg-white/[0.05] ring-1 ring-white/[0.07] p-3">
-                  <p className="mb-1.5 text-[10px] font-bold uppercase tracking-wider text-slate-500">Fulfillment</p>
+                  <p className="mb-1.5 text-[10px] font-bold uppercase tracking-wider text-slate-500">{t('fulfillment')}</p>
                   <span className={`inline-flex rounded-full border px-2.5 py-1 text-xs font-semibold ${getStatusBadgeClass(order.fulfillmentStatus)}`}>
                     {getStatusLabel(order.fulfillmentStatus)}
                   </span>
@@ -121,13 +123,13 @@ export function OrderDetailDrawer({ orderId, onClose }: Props) {
               )}
               {order.deliveryStatus && (
                 <div className="rounded-xl bg-white/[0.05] ring-1 ring-white/[0.07] p-3">
-                  <p className="mb-1.5 text-[10px] font-bold uppercase tracking-wider text-slate-500">Delivery</p>
+                  <p className="mb-1.5 text-[10px] font-bold uppercase tracking-wider text-slate-500">{t('delivery')}</p>
                   <span className="text-xs font-semibold text-slate-300">{order.deliveryStatus}</span>
                 </div>
               )}
               {order.deliveryMethod && (
                 <div className="rounded-xl bg-white/[0.05] ring-1 ring-white/[0.07] p-3">
-                  <p className="mb-1.5 text-[10px] font-bold uppercase tracking-wider text-slate-500">Method</p>
+                  <p className="mb-1.5 text-[10px] font-bold uppercase tracking-wider text-slate-500">{t('method')}</p>
                   <div className="flex items-center gap-1">
                     <Truck size={11} className="text-slate-500" />
                     <span className="text-xs font-semibold text-slate-300">{order.deliveryMethod}</span>
@@ -139,7 +141,7 @@ export function OrderDetailDrawer({ orderId, onClose }: Props) {
 
           {/* Customer */}
           <section className="rounded-2xl bg-white/[0.04] ring-1 ring-white/[0.07] p-4">
-            <p className="mb-3 text-[11px] font-bold uppercase tracking-wider text-slate-500">Customer</p>
+            <p className="mb-3 text-[11px] font-bold uppercase tracking-wider text-slate-500">{t('customer')}</p>
             <div className="flex items-center gap-3">
               <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-indigo-500 to-violet-600 text-sm font-bold text-white shadow-sm">
                 {order.customerName.split(' ').map((w) => w[0]).join('').slice(0, 2).toUpperCase() || '?'}
@@ -153,11 +155,11 @@ export function OrderDetailDrawer({ orderId, onClose }: Props) {
 
           {/* Dates */}
           <section>
-            <p className="mb-2.5 text-[11px] font-bold uppercase tracking-wider text-slate-500">Timeline</p>
+            <p className="mb-2.5 text-[11px] font-bold uppercase tracking-wider text-slate-500">{t('timeline')}</p>
             <div className="grid grid-cols-2 gap-3">
               {[
-                { label: 'Ordered', date: order.createdAt },
-                { label: 'Updated', date: order.updatedAt },
+                { label: t('ordered'), date: order.createdAt },
+                { label: t('updated'), date: order.updatedAt },
               ].map(({ label, date }) => (
                 <div key={label} className="flex items-start gap-2.5 rounded-2xl bg-white/[0.04] ring-1 ring-white/[0.07] p-3.5">
                   <Calendar size={13} className="mt-0.5 shrink-0 text-slate-500" />
@@ -176,9 +178,9 @@ export function OrderDetailDrawer({ orderId, onClose }: Props) {
           {/* Tags */}
           {order.tags && (
             <section>
-              <p className="mb-2.5 text-[11px] font-bold uppercase tracking-wider text-slate-500">Tags</p>
+              <p className="mb-2.5 text-[11px] font-bold uppercase tracking-wider text-slate-500">{t('tags')}</p>
               <div className="flex flex-wrap gap-1.5">
-                {order.tags.split(',').map((t) => t.trim()).filter(Boolean).map((tag) => (
+                {order.tags.split(',').map((tag) => tag.trim()).filter(Boolean).map((tag) => (
                   <span key={tag} className="flex items-center gap-1 rounded-lg bg-indigo-500/15 px-2.5 py-1 text-xs font-semibold text-indigo-300 ring-1 ring-indigo-500/25">
                     <Tag size={9} />
                     {tag}
@@ -191,7 +193,7 @@ export function OrderDetailDrawer({ orderId, onClose }: Props) {
           {/* Notes */}
           {order.notes && (
             <section>
-              <p className="mb-2.5 text-[11px] font-bold uppercase tracking-wider text-slate-500">Notes</p>
+              <p className="mb-2.5 text-[11px] font-bold uppercase tracking-wider text-slate-500">{t('notes')}</p>
               <p className="rounded-2xl bg-white/[0.04] ring-1 ring-white/[0.07] p-4 text-sm text-slate-300 leading-relaxed">
                 {order.notes}
               </p>
@@ -201,16 +203,16 @@ export function OrderDetailDrawer({ orderId, onClose }: Props) {
           {/* Items */}
           <section>
             <div className="mb-2.5 flex items-center gap-2">
-              <p className="text-[11px] font-bold uppercase tracking-wider text-slate-500">Items</p>
+              <p className="text-[11px] font-bold uppercase tracking-wider text-slate-500">{t('items')}</p>
               <Package size={11} className="text-slate-600" />
             </div>
             <div className="overflow-hidden rounded-2xl ring-1 ring-white/[0.08]">
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-white/[0.07] bg-white/[0.05]">
-                    <th className="px-4 py-3 text-left text-[11px] font-bold uppercase tracking-wider text-slate-500">Product</th>
-                    <th className="px-4 py-3 text-center text-[11px] font-bold uppercase tracking-wider text-slate-500">Qty</th>
-                    <th className="px-4 py-3 text-right text-[11px] font-bold uppercase tracking-wider text-slate-500">Price</th>
+                    <th className="px-4 py-3 text-start text-[11px] font-bold uppercase tracking-wider text-slate-500">{t('product')}</th>
+                    <th className="px-4 py-3 text-center text-[11px] font-bold uppercase tracking-wider text-slate-500">{t('qty')}</th>
+                    <th className="px-4 py-3 text-end text-[11px] font-bold uppercase tracking-wider text-slate-500">{t('price')}</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-white/[0.05]">
@@ -218,7 +220,7 @@ export function OrderDetailDrawer({ orderId, onClose }: Props) {
                     <tr key={i} className="hover:bg-white/[0.03] transition-colors">
                       <td className="px-4 py-3 font-medium text-slate-300">{item.name}</td>
                       <td className="px-4 py-3 text-center text-slate-500">{item.qty}</td>
-                      <td className="px-4 py-3 text-right font-semibold text-slate-300">
+                      <td className="px-4 py-3 text-end font-semibold text-slate-300">
                         {formatCurrency(item.price, order.currency)}
                       </td>
                     </tr>
@@ -226,8 +228,8 @@ export function OrderDetailDrawer({ orderId, onClose }: Props) {
                 </tbody>
                 <tfoot>
                   <tr className="border-t border-white/[0.08] bg-white/[0.04]">
-                    <td colSpan={2} className="px-4 py-3 text-right text-sm font-semibold text-slate-500">Total</td>
-                    <td className="px-4 py-3 text-right text-sm font-extrabold text-white">
+                    <td colSpan={2} className="px-4 py-3 text-end text-sm font-semibold text-slate-500">{t('total')}</td>
+                    <td className="px-4 py-3 text-end text-sm font-extrabold text-white">
                       {formatCurrency(order.total, order.currency)}
                     </td>
                   </tr>

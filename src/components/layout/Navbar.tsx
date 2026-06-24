@@ -8,24 +8,26 @@ import {
 } from 'lucide-react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
+import { useTranslations } from 'next-intl'
 import { auth } from '../../lib/firebase'
 import { useAuthStore } from '../../store/useAuthStore'
 import { useIsSuperAdmin } from '../../hooks/useUserProfile'
-
-const baseNavLinks = [
-  { href: '/', label: 'Orders', icon: LayoutDashboard },
-  { href: '/settings/stores', label: 'Stores', icon: Store },
-]
+import { LanguageSwitcher } from '../ui/LanguageSwitcher'
 
 export function Navbar() {
   const { user } = useAuthStore()
   const pathname = usePathname()
   const isSuperAdmin = useIsSuperAdmin()
+  const t = useTranslations('nav')
   const [collapsed, setCollapsed] = useState(false)
   const [mobileOpen, setMobileOpen] = useState(false)
 
+  const baseNavLinks = [
+    { href: '/', label: t('orders'), icon: LayoutDashboard },
+    { href: '/settings/stores', label: t('stores'), icon: Store },
+  ]
   const navLinks = isSuperAdmin
-    ? [...baseNavLinks, { href: '/admin', label: 'Admin', icon: ShieldCheck }]
+    ? [...baseNavLinks, { href: '/admin', label: t('admin'), icon: ShieldCheck }]
     : baseNavLinks
 
   function navContent(mobile = false) {
@@ -41,7 +43,7 @@ export function Navbar() {
           {!slim && (
             <div className="min-w-0 flex-1">
               <span className="block text-sm font-bold tracking-tight text-white">OrderHub</span>
-              <p className="truncate text-[10px] text-slate-500 -mt-0.5">Order Management</p>
+              <p className="truncate text-[10px] text-slate-500 -mt-0.5">{t('orderManagement')}</p>
             </div>
           )}
           {mobile && (
@@ -58,7 +60,7 @@ export function Navbar() {
         <nav className={`flex-1 py-4 ${slim ? 'px-2' : 'px-3'}`}>
           {!slim && (
             <p className="mb-2 px-2 text-[10px] font-semibold uppercase tracking-widest text-slate-600">
-              Workspace
+              {t('workspace')}
             </p>
           )}
           <div className="space-y-0.5">
@@ -95,16 +97,23 @@ export function Navbar() {
 
           {isSuperAdmin && (
             slim ? (
-              <div className="mt-4 flex justify-center" title="Super Admin">
+              <div className="mt-4 flex justify-center" title={t('superAdmin')}>
                 <span className="h-1.5 w-1.5 rounded-full bg-violet-500" />
               </div>
             ) : (
               <div className="mt-4 rounded-xl border border-violet-500/15 bg-violet-500/5 px-3 py-2">
-                <p className="text-[10px] font-semibold text-violet-500 uppercase tracking-widest">Super Admin</p>
+                <p className="text-[10px] font-semibold text-violet-500 uppercase tracking-widest">
+                  {t('superAdmin')}
+                </p>
               </div>
             )
           )}
         </nav>
+
+        {/* Language switcher */}
+        <div className={`border-t border-white/[0.06] ${slim ? 'px-2 py-2' : 'px-3 py-2'}`}>
+          <LanguageSwitcher collapsed={slim} />
+        </div>
 
         {/* User */}
         <div className="border-t border-white/[0.06] px-3 py-3">
@@ -124,7 +133,7 @@ export function Navbar() {
             )}
             <button
               onClick={() => signOut(auth)}
-              title="Sign out"
+              title={t('signOut')}
               className="shrink-0 rounded-lg p-1.5 text-slate-600 transition-colors hover:bg-white/[0.06] hover:text-slate-400"
             >
               <LogOut size={13} />
@@ -140,7 +149,13 @@ export function Navbar() {
               title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
               className="rounded-lg p-2 text-slate-600 transition-colors hover:bg-white/[0.06] hover:text-slate-400"
             >
-              {collapsed ? <ChevronRight size={14} /> : <ChevronLeft size={14} />}
+              {/* Chevrons flip in RTL via rtl: variant */}
+              {collapsed
+                ? <ChevronRight size={14} className="rtl:hidden" />
+                : <ChevronLeft size={14} className="rtl:hidden" />}
+              {collapsed
+                ? <ChevronLeft size={14} className="hidden rtl:block" />
+                : <ChevronRight size={14} className="hidden rtl:block" />}
             </button>
           </div>
         )}
@@ -152,7 +167,7 @@ export function Navbar() {
     <>
       {/* ── Desktop sidebar ── */}
       <aside
-        className={`hidden md:flex h-screen shrink-0 flex-col bg-slate-950 border-r border-white/[0.04] overflow-hidden transition-[width] duration-200 ${
+        className={`hidden md:flex h-screen shrink-0 flex-col bg-slate-950 border-e border-white/[0.04] overflow-hidden transition-[width] duration-200 ${
           collapsed ? 'w-16' : 'w-60'
         }`}
       >
@@ -183,7 +198,8 @@ export function Navbar() {
             className="absolute inset-0 bg-black/60 backdrop-blur-sm"
             onClick={() => setMobileOpen(false)}
           />
-          <aside className="relative flex w-72 flex-col border-r border-white/[0.06] bg-slate-950">
+          {/* In RTL dir="rtl" reverses flex, so aside naturally appears on the right */}
+          <aside className="relative flex w-72 flex-col border-e border-white/[0.06] bg-slate-950">
             {navContent(true)}
           </aside>
         </div>

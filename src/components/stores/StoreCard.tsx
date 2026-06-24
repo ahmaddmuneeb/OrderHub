@@ -1,30 +1,33 @@
 'use client'
 
 import { doc, deleteDoc } from 'firebase/firestore'
+import { useTranslations } from 'next-intl'
 import { db } from '../../lib/firebase'
 import { Store, PLATFORM_LABELS, PLATFORM_COLORS } from '../../types'
 import { Unplug, CheckCircle2, AlertCircle, WifiOff } from 'lucide-react'
 import { toast } from 'sonner'
 
-const STATUS_CONFIG = {
-  connected: {
-    icon: <CheckCircle2 size={13} className="text-emerald-400" />,
-    label: 'Connected',
-    chip: 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/25',
-  },
-  error: {
-    icon: <AlertCircle size={13} className="text-rose-400" />,
-    label: 'Error',
-    chip: 'bg-rose-500/15 text-rose-400 border border-rose-500/25',
-  },
-  disconnected: {
-    icon: <WifiOff size={13} className="text-slate-500" />,
-    label: 'Disconnected',
-    chip: 'bg-white/[0.06] text-slate-500 border border-white/[0.1]',
-  },
-}
-
 export function StoreCard({ store }: { store: Store }) {
+  const t = useTranslations('stores')
+
+  const STATUS_CONFIG = {
+    connected: {
+      icon: <CheckCircle2 size={13} className="text-emerald-400" />,
+      label: t('connected'),
+      chip: 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/25',
+    },
+    error: {
+      icon: <AlertCircle size={13} className="text-rose-400" />,
+      label: t('error'),
+      chip: 'bg-rose-500/15 text-rose-400 border border-rose-500/25',
+    },
+    disconnected: {
+      icon: <WifiOff size={13} className="text-slate-500" />,
+      label: t('disconnected'),
+      chip: 'bg-white/[0.06] text-slate-500 border border-white/[0.1]',
+    },
+  }
+
   const cfg = STATUS_CONFIG[store.status] ?? STATUS_CONFIG.connected
 
   async function handleDisconnect() {
@@ -67,7 +70,7 @@ export function StoreCard({ store }: { store: Store }) {
                      hover:bg-rose-500/10 hover:text-rose-400 transition-colors"
         >
           <Unplug size={12} />
-          Disconnect
+          {t('disconnect')}
         </button>
       </div>
     </div>
