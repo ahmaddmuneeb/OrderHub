@@ -7,7 +7,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
   useStoresListener()
 
   return (
-    <div className="flex h-screen overflow-hidden bg-slate-50">
+    <div className="flex h-screen overflow-hidden bg-slate-950">
       <Navbar />
       <main className="flex flex-1 flex-col overflow-hidden">
         {children}

@@ -112,11 +112,11 @@ export function AddStoreModal({ open, onClose }: Props) {
 
         {/* Platform picker */}
         <div>
-          <label className="mb-1.5 block text-sm font-medium text-slate-700">Platform</label>
+          <label className="mb-1.5 block text-sm font-semibold text-slate-400">Platform</label>
           <select
             value={platform}
             onChange={(e) => { setPlatform(e.target.value as Platform); setCreds({}) }}
-            className="w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-100"
+            className="w-full rounded-xl border border-white/[0.1] bg-white/[0.07] px-3 py-2.5 text-sm text-slate-200 focus:border-indigo-500/60 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 [color-scheme:dark]"
           >
             <option value="shopify">Shopify</option>
             <option value="woocommerce">WooCommerce</option>
@@ -125,14 +125,14 @@ export function AddStoreModal({ open, onClose }: Props) {
         </div>
 
         {/* Help hint */}
-        <div className="rounded-lg border border-blue-100 bg-blue-50 px-3 py-2.5 text-xs text-blue-700">
+        <div className="rounded-xl border border-indigo-500/20 bg-indigo-500/10 px-3 py-2.5 text-xs text-indigo-300">
           <div className="flex gap-2">
             <Info size={13} className="mt-0.5 shrink-0" />
             <div>
               <p className="font-semibold mb-0.5">Where to find credentials</p>
-              <p className="leading-relaxed">{PLATFORM_HELP[platform].steps}</p>
+              <p className="leading-relaxed text-indigo-400">{PLATFORM_HELP[platform].steps}</p>
               {PLATFORM_HELP[platform].note && (
-                <p className="mt-1.5 rounded bg-amber-50 border border-amber-200 px-2 py-1 text-amber-700 font-medium">
+                <p className="mt-1.5 rounded-lg bg-amber-500/10 border border-amber-500/20 px-2 py-1 text-amber-400 font-medium">
                   ⚠ {PLATFORM_HELP[platform].note}
                 </p>
               )}
@@ -142,44 +142,44 @@ export function AddStoreModal({ open, onClose }: Props) {
 
         {/* Display name */}
         <div>
-          <label className="mb-1.5 block text-sm font-medium text-slate-700">
-            Display Name <span className="font-normal text-slate-400">(optional)</span>
+          <label className="mb-1.5 block text-sm font-semibold text-slate-400">
+            Display Name <span className="font-normal text-slate-600">(optional)</span>
           </label>
           <input
             value={storeName}
             onChange={(e) => setStoreName(e.target.value)}
             placeholder="My Main Store"
-            className="w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-100"
+            className="w-full rounded-xl border border-white/[0.1] bg-white/[0.07] px-3 py-2.5 text-sm text-slate-200 placeholder:text-slate-600 focus:border-indigo-500/60 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
           />
         </div>
 
         {/* Dynamic credential fields */}
         {fields.map(({ label, key, secret, placeholder }) => (
           <div key={key}>
-            <label className="mb-1.5 block text-sm font-medium text-slate-700">{label}</label>
+            <label className="mb-1.5 block text-sm font-semibold text-slate-400">{label}</label>
             <input
               value={(creds[key] as string) ?? ''}
               onChange={(e) => setCreds({ ...creds, [key]: e.target.value })}
               type={secret ? 'password' : 'text'}
               placeholder={placeholder}
               autoComplete="off"
-              className="w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5 font-mono text-sm focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-100"
+              className="w-full rounded-xl border border-white/[0.1] bg-white/[0.07] px-3 py-2.5 font-mono text-sm text-slate-200 placeholder:text-slate-600 focus:border-indigo-500/60 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
             />
           </div>
         ))}
 
         {/* Actions */}
-        <div className="flex items-center justify-end gap-3 pt-1 border-t border-gray-100">
+        <div className="flex items-center justify-end gap-3 pt-1 border-t border-white/[0.07]">
           <button
             onClick={handleClose}
-            className="rounded-lg border border-slate-200 px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-50 transition-colors"
+            className="rounded-xl border border-white/[0.1] px-4 py-2 text-sm font-semibold text-slate-400 hover:bg-white/[0.06] hover:text-slate-200 transition-colors"
           >
             Cancel
           </button>
           <button
             onClick={handleSave}
             disabled={saving || !isFormValid()}
-            className="rounded-lg bg-indigo-600 px-5 py-2 text-sm font-semibold text-white hover:bg-indigo-700 disabled:opacity-50 transition-colors"
+            className="rounded-xl bg-indigo-600 px-5 py-2 text-sm font-semibold text-white shadow-lg shadow-indigo-600/25 hover:bg-indigo-500 disabled:opacity-50 transition-colors"
           >
             {saving ? 'Connecting…' : 'Connect Store'}
           </button>

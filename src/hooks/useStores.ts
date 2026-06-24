@@ -6,23 +6,30 @@ import { useStoreStore } from '../store/useStoreStore'
 import { Store } from '../types'
 
 export function useStoresListener() {
-  const { user } = useAuthStore()
+  const { user, loading } = useAuthStore()
   const { setStores, setStoresLoading } = useStoreStore()
 
   useEffect(() => {
-    if (!user) {
+    if (loading || !user) {
       setStores([])
       setStoresLoading(false)
       return
     }
 
     const q = query(collection(db, 'stores'), where('userId', '==', user.uid))
-    const unsub = onSnapshot(q, (snap) => {
-      const stores = snap.docs.map((d) => ({ id: d.id, ...d.data() }) as Store)
-      setStores(stores)
-      setStoresLoading(false)
-    })
+    const unsub = onSnapshot(
+      q,
+      (snap) => {
+        const stores = snap.docs.map((d) => ({ id: d.id, ...d.data() }) as Store)
+        setStores(stores)
+        setStoresLoading(false)
+      },
+      (err) => {
+        console.error('Firestore stores listener error:', err.code, err.message)
+        setStoresLoading(false)
+      },
+    )
 
     return unsub
-  }, [user, setStores, setStoresLoading])
+  }, [user, loading, setStores, setStoresLoading])
 }

@@ -11,7 +11,6 @@ interface Props {
 }
 
 export function StatsBar({ orders, loading, platform }: Props) {
-  // Always show: total orders + per-status counts for the relevant platform
   const statuses = platform ? PLATFORM_STATUSES[platform] : []
   const activeStatuses = statuses.filter((s) => orders.some((o) => o.status === s))
   const showStatuses = activeStatuses.length > 0 ? activeStatuses : statuses.slice(0, 5)
@@ -31,13 +30,13 @@ export function StatsBar({ orders, loading, platform }: Props) {
 
   return (
     <div className={`grid gap-3 ${gridClass}`}>
-      {/* Total */}
-      <div className="flex flex-col rounded-xl border border-slate-200 bg-white px-4 py-3 shadow-sm">
-        <div className="mb-2 inline-flex w-fit rounded-lg p-1.5 bg-slate-100">
-          <ShoppingCart size={13} className="text-slate-600" />
+      {/* Total — accent card */}
+      <div className="flex flex-col rounded-2xl bg-gradient-to-br from-indigo-600 to-violet-600 px-4 py-3.5 shadow-lg shadow-indigo-500/20">
+        <div className="mb-2.5 flex h-8 w-8 items-center justify-center rounded-xl bg-white/20">
+          <ShoppingCart size={14} className="text-white" />
         </div>
-        <p className="text-2xl font-bold text-slate-900">{orders.length}</p>
-        <p className="mt-0.5 text-xs font-medium text-slate-500">Total</p>
+        <p className="text-2xl font-bold tracking-tight text-white">{orders.length}</p>
+        <p className="mt-0.5 text-xs font-medium text-indigo-200">Total Orders</p>
       </div>
 
       {/* Per-status counts */}
@@ -45,11 +44,11 @@ export function StatsBar({ orders, loading, platform }: Props) {
         const count = orders.filter((o) => o.status === status).length
         const dot = getStatusDotColor(status)
         return (
-          <div key={status} className="flex flex-col rounded-xl border border-slate-200 bg-white px-4 py-3 shadow-sm">
-            <div className="mb-2 inline-flex w-fit items-center justify-center rounded-lg p-1.5 bg-slate-100">
+          <div key={status} className="flex flex-col rounded-2xl bg-white/[0.06] px-4 py-3.5 ring-1 ring-white/[0.08]">
+            <div className="mb-2.5 flex h-8 w-8 items-center justify-center rounded-xl bg-white/[0.08]">
               <span className={`h-2.5 w-2.5 rounded-full ${dot}`} />
             </div>
-            <p className="text-2xl font-bold text-slate-900">{count}</p>
+            <p className="text-2xl font-bold tracking-tight text-white">{count}</p>
             <p className="mt-0.5 truncate text-xs font-medium text-slate-500">{getStatusLabel(status)}</p>
           </div>
         )

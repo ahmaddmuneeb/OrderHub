@@ -17,7 +17,7 @@ export function KanbanColumn({ status, orders, loading, onOrderClick }: Props) {
   const { setNodeRef, isOver } = useDroppable({ id: status })
 
   return (
-    <div className="flex min-w-[272px] max-w-[272px] flex-col">
+    <div className="flex min-w-[284px] max-w-[284px] flex-col">
       {/* Header */}
       <div className="mb-2.5 flex items-center justify-between px-1">
         <div className="flex items-center gap-2">
@@ -26,7 +26,7 @@ export function KanbanColumn({ status, orders, loading, onOrderClick }: Props) {
             {getStatusLabel(status)}
           </span>
         </div>
-        <span className="rounded-full bg-slate-200 px-2 py-0.5 text-xs font-semibold text-slate-500">
+        <span className="rounded-full bg-white/[0.08] px-2 py-0.5 text-xs font-bold text-slate-400 ring-1 ring-white/[0.1]">
           {loading ? '–' : orders.length}
         </span>
       </div>
@@ -34,10 +34,10 @@ export function KanbanColumn({ status, orders, loading, onOrderClick }: Props) {
       {/* Drop zone */}
       <div
         ref={setNodeRef}
-        className={`scrollbar-thin flex flex-1 flex-col gap-2 overflow-y-auto rounded-xl p-2 transition-all duration-150 ${
+        className={`scrollbar-thin flex flex-1 flex-col gap-2.5 overflow-y-auto rounded-2xl p-2.5 transition-all duration-150 ${
           isOver
-            ? 'bg-indigo-50 ring-2 ring-inset ring-indigo-300'
-            : 'bg-slate-100'
+            ? 'bg-indigo-500/10 ring-2 ring-inset ring-indigo-500/30'
+            : 'bg-white/[0.03] ring-1 ring-inset ring-white/[0.06]'
         }`}
         style={{ minHeight: 120 }}
       >
@@ -51,7 +51,7 @@ export function KanbanColumn({ status, orders, loading, onOrderClick }: Props) {
               <CardSkeleton />
             </>
           ) : orders.length === 0 ? (
-            <div className="flex flex-1 items-center justify-center py-12 text-xs text-slate-400">
+            <div className="flex flex-1 items-center justify-center py-12 text-xs text-slate-700">
               No orders
             </div>
           ) : (

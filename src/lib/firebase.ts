@@ -4,12 +4,12 @@ import { getFirestore } from 'firebase/firestore'
 import type { StoreCredentials } from '../types'
 
 const app = initializeApp({
-  apiKey: 'AIzaSyAXDnTXh0r3SJ4UyU-wGlJmuXnA1jbGaao',
-  authDomain: 'dashboard-41215.firebaseapp.com',
-  projectId: 'dashboard-41215',
-  storageBucket: 'dashboard-41215.firebasestorage.app',
-  messagingSenderId: '841155459822',
-  appId: '1:841155459822:web:7e688e27898bca397751ff',
+  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
+  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
+  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
+  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
+  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
 })
 
 export const auth = getAuth(app)

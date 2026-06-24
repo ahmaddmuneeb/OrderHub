@@ -21,19 +21,19 @@ export function Drawer({ open, onClose, title, children }: DrawerProps) {
     <div className={`fixed inset-0 z-50 transition-all duration-300 ${open ? 'pointer-events-auto' : 'pointer-events-none'}`}>
       {/* Backdrop */}
       <div
-        className={`absolute inset-0 bg-slate-950/50 backdrop-blur-sm transition-opacity duration-300 ${open ? 'opacity-100' : 'opacity-0'}`}
+        className={`absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity duration-300 ${open ? 'opacity-100' : 'opacity-0'}`}
         onClick={onClose}
       />
 
       {/* Panel */}
       <aside
-        className={`absolute right-0 top-0 flex h-full w-full max-w-lg flex-col bg-white shadow-2xl transition-transform duration-300 ease-out ${open ? 'translate-x-0' : 'translate-x-full'}`}
+        className={`absolute right-0 top-0 flex h-full w-full max-w-lg flex-col bg-slate-900 border-l border-white/[0.08] shadow-2xl shadow-black/50 transition-transform duration-300 ease-out ${open ? 'translate-x-0' : 'translate-x-full'}`}
       >
-        <div className="flex items-center justify-between border-b border-slate-100 px-6 py-4">
-          <h2 className="text-base font-bold text-slate-900">{title}</h2>
+        <div className="flex items-center justify-between border-b border-white/[0.07] px-6 py-4">
+          <h2 className="text-base font-bold tracking-tight text-white">{title}</h2>
           <button
             onClick={onClose}
-            className="rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600"
+            className="rounded-xl p-1.5 text-slate-500 transition-colors hover:bg-white/[0.07] hover:text-slate-300"
           >
             <X size={16} />
           </button>
