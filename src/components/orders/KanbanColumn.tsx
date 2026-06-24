@@ -2,12 +2,12 @@
 
 import { useDroppable } from '@dnd-kit/core'
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable'
-import { Order, OrderStatus, STATUS_LABELS, COLUMN_HEADER_COLORS } from '../../types'
+import { Order, getStatusLabel, getStatusDotColor } from '../../types'
 import { OrderCard } from './OrderCard'
 import { CardSkeleton } from '../ui/Skeleton'
 
 interface Props {
-  status: OrderStatus
+  status: string
   orders: Order[]
   loading: boolean
   onOrderClick: (orderId: string) => void
@@ -17,24 +17,29 @@ export function KanbanColumn({ status, orders, loading, onOrderClick }: Props) {
   const { setNodeRef, isOver } = useDroppable({ id: status })
 
   return (
-    <div className="flex min-w-[260px] max-w-[300px] flex-1 flex-col">
-      <div
-        className={`mb-3 flex items-center justify-between rounded-t-lg border-t-4 bg-gray-100 px-3 py-2 ${COLUMN_HEADER_COLORS[status]}`}
-      >
-        <span className="text-sm font-semibold text-gray-700">
-          {STATUS_LABELS[status]}
-        </span>
-        <span className="rounded-full bg-white px-2 py-0.5 text-xs font-bold text-gray-600">
-          {orders.length}
+    <div className="flex min-w-[272px] max-w-[272px] flex-col">
+      {/* Header */}
+      <div className="mb-2.5 flex items-center justify-between px-1">
+        <div className="flex items-center gap-2">
+          <span className={`h-2 w-2 rounded-full ${getStatusDotColor(status)}`} />
+          <span className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+            {getStatusLabel(status)}
+          </span>
+        </div>
+        <span className="rounded-full bg-slate-200 px-2 py-0.5 text-xs font-semibold text-slate-500">
+          {loading ? '–' : orders.length}
         </span>
       </div>
 
+      {/* Drop zone */}
       <div
         ref={setNodeRef}
-        className={`flex flex-1 flex-col gap-2 rounded-b-lg p-2 transition-colors ${
-          isOver ? 'bg-indigo-50 ring-2 ring-indigo-300 ring-inset' : 'bg-gray-100'
+        className={`scrollbar-thin flex flex-1 flex-col gap-2 overflow-y-auto rounded-xl p-2 transition-all duration-150 ${
+          isOver
+            ? 'bg-indigo-50 ring-2 ring-inset ring-indigo-300'
+            : 'bg-slate-100'
         }`}
-        style={{ minHeight: '120px' }}
+        style={{ minHeight: 120 }}
       >
         <SortableContext
           items={orders.map((o) => o.id)}
@@ -46,7 +51,7 @@ export function KanbanColumn({ status, orders, loading, onOrderClick }: Props) {
               <CardSkeleton />
             </>
           ) : orders.length === 0 ? (
-            <div className="flex flex-1 items-center justify-center py-8 text-xs text-gray-400">
+            <div className="flex flex-1 items-center justify-center py-12 text-xs text-slate-400">
               No orders
             </div>
           ) : (

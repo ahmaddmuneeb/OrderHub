@@ -23,12 +23,14 @@ export async function POST(req: NextRequest) {
       })
     )
 
-    const orders: NormalizedOrder[] = []
+    const orders: Array<NormalizedOrder & { id: string }> = []
     const errors: string[] = []
 
     results.forEach((r, i) => {
       if (r.status === 'fulfilled') {
-        orders.push(...r.value)
+        r.value.forEach((o) => {
+          orders.push({ ...o, id: `${o.platform}_${o.storeId}_${o.platformOrderId}` })
+        })
       } else {
         errors.push(`${stores[i].platform} (${stores[i].id}): ${(r.reason as Error)?.message ?? 'fetch failed'}`)
       }

@@ -32,10 +32,17 @@ const PLATFORM_FIELDS: Record<Platform, { label: string; key: keyof StoreCredent
   ],
 }
 
-const PLATFORM_HELP: Record<Platform, string> = {
-  shopify: 'Settings → Apps → Develop apps → Create app → API credentials → Admin API access token (read_orders + write_orders scopes)',
-  woocommerce: 'WooCommerce → Settings → Advanced → REST API → Add key (Read/Write)',
-  bigcommerce: 'Settings → API → Store-level API Accounts → Create (Orders: Read-Write)',
+const PLATFORM_HELP: Record<Platform, { steps: string; note?: string }> = {
+  shopify: {
+    steps: 'Shopify Admin → Settings → Apps → Develop apps → Create app → Configuration → Admin API scopes: enable read_orders + write_orders → Save → API credentials → Install app → copy the Admin API access token (shpat_…)',
+    note: 'The token is only shown once. Do NOT use the API key or secret key — you need the access token that starts with shpat_',
+  },
+  woocommerce: {
+    steps: 'WooCommerce → Settings → Advanced → REST API → Add key → Permissions: Read/Write → Generate API key',
+  },
+  bigcommerce: {
+    steps: 'BigCommerce Admin → Settings → API → Store-level API Accounts → Create API account → Scope: Orders (Read-Write)',
+  },
 }
 
 function requiredKeys(platform: Platform): (keyof StoreCredentials)[] {
@@ -105,11 +112,11 @@ export function AddStoreModal({ open, onClose }: Props) {
 
         {/* Platform picker */}
         <div>
-          <label className="mb-1 block text-sm font-medium text-gray-700">Platform</label>
+          <label className="mb-1.5 block text-sm font-medium text-slate-700">Platform</label>
           <select
             value={platform}
             onChange={(e) => { setPlatform(e.target.value as Platform); setCreds({}) }}
-            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200"
+            className="w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-100"
           >
             <option value="shopify">Shopify</option>
             <option value="woocommerce">WooCommerce</option>
@@ -118,35 +125,45 @@ export function AddStoreModal({ open, onClose }: Props) {
         </div>
 
         {/* Help hint */}
-        <div className="flex gap-2 rounded-lg border border-blue-100 bg-blue-50 px-3 py-2 text-xs text-blue-700">
-          <Info size={13} className="mt-0.5 shrink-0" />
-          <span><strong>Where to find credentials:</strong> {PLATFORM_HELP[platform]}</span>
+        <div className="rounded-lg border border-blue-100 bg-blue-50 px-3 py-2.5 text-xs text-blue-700">
+          <div className="flex gap-2">
+            <Info size={13} className="mt-0.5 shrink-0" />
+            <div>
+              <p className="font-semibold mb-0.5">Where to find credentials</p>
+              <p className="leading-relaxed">{PLATFORM_HELP[platform].steps}</p>
+              {PLATFORM_HELP[platform].note && (
+                <p className="mt-1.5 rounded bg-amber-50 border border-amber-200 px-2 py-1 text-amber-700 font-medium">
+                  ⚠ {PLATFORM_HELP[platform].note}
+                </p>
+              )}
+            </div>
+          </div>
         </div>
 
         {/* Display name */}
         <div>
-          <label className="mb-1 block text-sm font-medium text-gray-700">
-            Display Name <span className="font-normal text-gray-400">(optional)</span>
+          <label className="mb-1.5 block text-sm font-medium text-slate-700">
+            Display Name <span className="font-normal text-slate-400">(optional)</span>
           </label>
           <input
             value={storeName}
             onChange={(e) => setStoreName(e.target.value)}
             placeholder="My Main Store"
-            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200"
+            className="w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-100"
           />
         </div>
 
         {/* Dynamic credential fields */}
         {fields.map(({ label, key, secret, placeholder }) => (
           <div key={key}>
-            <label className="mb-1 block text-sm font-medium text-gray-700">{label}</label>
+            <label className="mb-1.5 block text-sm font-medium text-slate-700">{label}</label>
             <input
               value={(creds[key] as string) ?? ''}
               onChange={(e) => setCreds({ ...creds, [key]: e.target.value })}
               type={secret ? 'password' : 'text'}
               placeholder={placeholder}
               autoComplete="off"
-              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm font-mono focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200"
+              className="w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5 font-mono text-sm focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-100"
             />
           </div>
         ))}
@@ -155,14 +172,14 @@ export function AddStoreModal({ open, onClose }: Props) {
         <div className="flex items-center justify-end gap-3 pt-1 border-t border-gray-100">
           <button
             onClick={handleClose}
-            className="rounded-lg border border-gray-200 px-4 py-2 text-sm text-gray-600 hover:bg-gray-50"
+            className="rounded-lg border border-slate-200 px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-50 transition-colors"
           >
             Cancel
           </button>
           <button
             onClick={handleSave}
             disabled={saving || !isFormValid()}
-            className="rounded-lg bg-indigo-600 px-5 py-2 text-sm font-semibold text-white hover:bg-indigo-700 disabled:opacity-50"
+            className="rounded-lg bg-indigo-600 px-5 py-2 text-sm font-semibold text-white hover:bg-indigo-700 disabled:opacity-50 transition-colors"
           >
             {saving ? 'Connecting…' : 'Connect Store'}
           </button>

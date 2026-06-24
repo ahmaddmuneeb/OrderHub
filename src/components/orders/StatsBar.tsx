@@ -1,64 +1,59 @@
 'use client'
 
-import { Order, OrderStatus, STATUS_LABELS } from '../../types'
+import { ShoppingCart } from 'lucide-react'
+import { Order, Platform, PLATFORM_STATUSES, getStatusLabel, getStatusDotColor } from '../../types'
 import { StatSkeleton } from '../ui/Skeleton'
 
 interface Props {
   orders: Order[]
   loading: boolean
+  platform: Platform | null
 }
 
-const STAT_COLORS: Record<OrderStatus | 'total', string> = {
-  total: 'text-gray-900',
-  new: 'text-blue-600',
-  pending: 'text-yellow-600',
-  processing: 'text-purple-600',
-  completed: 'text-green-600',
-  canceled: 'text-red-600',
-}
+export function StatsBar({ orders, loading, platform }: Props) {
+  // Always show: total orders + per-status counts for the relevant platform
+  const statuses = platform ? PLATFORM_STATUSES[platform] : []
+  const activeStatuses = statuses.filter((s) => orders.some((o) => o.status === s))
+  const showStatuses = activeStatuses.length > 0 ? activeStatuses : statuses.slice(0, 5)
 
-export function StatsBar({ orders, loading }: Props) {
+  const totalCols = 1 + showStatuses.length
+  const gridClass = totalCols <= 4 ? 'grid-cols-4' :
+    totalCols <= 5 ? 'grid-cols-5' :
+    totalCols <= 6 ? 'grid-cols-6' : 'grid-cols-4 sm:grid-cols-8'
+
   if (loading) {
     return (
-      <div className="mb-4 grid grid-cols-3 gap-3 sm:grid-cols-6">
-        {Array.from({ length: 6 }).map((_, i) => (
-          <StatSkeleton key={i} />
-        ))}
+      <div className={`grid gap-3 ${gridClass}`}>
+        {Array.from({ length: Math.min(totalCols, 6) }).map((_, i) => <StatSkeleton key={i} />)}
       </div>
     )
   }
 
-  const counts = {
-    total: orders.length,
-    new: orders.filter((o) => o.status === 'new').length,
-    pending: orders.filter((o) => o.status === 'pending').length,
-    processing: orders.filter((o) => o.status === 'processing').length,
-    completed: orders.filter((o) => o.status === 'completed').length,
-    canceled: orders.filter((o) => o.status === 'canceled').length,
-  }
-
-  const stats = [
-    { key: 'total', label: 'Total Orders' },
-    { key: 'new', label: STATUS_LABELS.new },
-    { key: 'pending', label: STATUS_LABELS.pending },
-    { key: 'processing', label: STATUS_LABELS.processing },
-    { key: 'completed', label: STATUS_LABELS.completed },
-    { key: 'canceled', label: STATUS_LABELS.canceled },
-  ] as const
-
   return (
-    <div className="mb-4 grid grid-cols-3 gap-3 sm:grid-cols-6">
-      {stats.map(({ key, label }) => (
-        <div
-          key={key}
-          className="rounded-lg border border-gray-200 bg-white px-4 py-3 shadow-sm"
-        >
-          <p className="text-xs text-gray-500">{label}</p>
-          <p className={`mt-0.5 text-2xl font-bold ${STAT_COLORS[key]}`}>
-            {counts[key]}
-          </p>
+    <div className={`grid gap-3 ${gridClass}`}>
+      {/* Total */}
+      <div className="flex flex-col rounded-xl border border-slate-200 bg-white px-4 py-3 shadow-sm">
+        <div className="mb-2 inline-flex w-fit rounded-lg p-1.5 bg-slate-100">
+          <ShoppingCart size={13} className="text-slate-600" />
         </div>
-      ))}
+        <p className="text-2xl font-bold text-slate-900">{orders.length}</p>
+        <p className="mt-0.5 text-xs font-medium text-slate-500">Total</p>
+      </div>
+
+      {/* Per-status counts */}
+      {showStatuses.map((status) => {
+        const count = orders.filter((o) => o.status === status).length
+        const dot = getStatusDotColor(status)
+        return (
+          <div key={status} className="flex flex-col rounded-xl border border-slate-200 bg-white px-4 py-3 shadow-sm">
+            <div className="mb-2 inline-flex w-fit items-center justify-center rounded-lg p-1.5 bg-slate-100">
+              <span className={`h-2.5 w-2.5 rounded-full ${dot}`} />
+            </div>
+            <p className="text-2xl font-bold text-slate-900">{count}</p>
+            <p className="mt-0.5 truncate text-xs font-medium text-slate-500">{getStatusLabel(status)}</p>
+          </div>
+        )
+      })}
     </div>
   )
 }

@@ -1,12 +1,25 @@
 import axios from 'axios'
 import OAuth from 'oauth-1.0a'
 import * as crypto from 'crypto'
-import { NormalizedOrder, OrderItem, OrderStatus, StoreCreds } from './_server_types'
+import { NormalizedOrder, OrderItem, StoreCreds } from './_server_types'
 
-const WOO_MAP: Record<string, OrderStatus> = {
-  pending: 'pending', processing: 'processing', 'on-hold': 'pending',
-  completed: 'completed', cancelled: 'canceled', refunded: 'canceled',
-  failed: 'canceled', trash: 'canceled',
+// WooCommerce financial/fulfillment status mapping
+function wooFinancialStatus(status: string): string {
+  const map: Record<string, string> = {
+    pending: 'pending', 'on-hold': 'on-hold', failed: 'failed',
+    processing: 'paid', completed: 'paid',
+    cancelled: 'cancelled', refunded: 'refunded',
+  }
+  return map[status] ?? status
+}
+
+function wooFulfillmentStatus(status: string): string {
+  const map: Record<string, string> = {
+    completed: 'fulfilled', processing: 'processing',
+    pending: 'unfulfilled', 'on-hold': 'on-hold',
+    cancelled: 'cancelled', refunded: 'refunded', failed: 'failed',
+  }
+  return map[status] ?? status
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -15,16 +28,25 @@ function normalize(raw: any, storeId: string, storeUrl: string): NormalizedOrder
     name: li.name, qty: li.quantity, price: parseFloat(li.price),
   }))
   const b = raw.billing ?? {}
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const firstShipping = (raw.shipping_lines ?? [])[0] as any
   return {
     platform: 'woocommerce', storeId,
-    platformOrderId: String(raw.number ?? raw.id),
+    platformOrderId: String(raw.id),
+    orderNumber: String(raw.number ?? raw.id),
     customerName: `${b.first_name ?? ''} ${b.last_name ?? ''}`.trim() || 'Unknown',
     customerEmail: b.email ?? '',
     items, total: parseFloat(raw.total ?? '0'),
     currency: raw.currency ?? 'USD',
-    status: WOO_MAP[raw.status] ?? 'new',
-    platformStatus: raw.status,
-    createdAt: new Date(raw.date_created), updatedAt: new Date(raw.date_modified),
+    status: raw.status ?? 'pending',
+    financialStatus: wooFinancialStatus(raw.status ?? 'pending'),
+    fulfillmentStatus: wooFulfillmentStatus(raw.status ?? 'pending'),
+    channel: raw.created_via ?? 'checkout',
+    deliveryMethod: firstShipping?.method_title ?? '',
+    deliveryStatus: '',
+    tags: '',
+    createdAt: new Date(raw.date_created),
+    updatedAt: new Date(raw.date_modified),
     notes: raw.customer_note ?? '',
     platformOrderUrl: `${storeUrl}/wp-admin/post.php?post=${raw.id}&action=edit`,
   }
@@ -56,13 +78,9 @@ export async function fetchWooOrders(creds: StoreCreds, storeId: string): Promis
   return orders
 }
 
-export async function pushWooStatus(creds: StoreCreds, platformOrderId: string, status: OrderStatus) {
-  const wooMap: Record<OrderStatus, string> = {
-    new: 'pending', pending: 'on-hold', processing: 'processing',
-    completed: 'completed', canceled: 'cancelled',
-  }
+export async function pushWooStatus(creds: StoreCreds, platformOrderId: string, status: string) {
   const url = `${creds.storeUrl}/wp-json/wc/v3/orders/${platformOrderId}`
-  await axios.put(url, { status: wooMap[status] }, { headers: oauthHeaders(creds, url, 'PUT') })
+  await axios.put(url, { status }, { headers: oauthHeaders(creds, url, 'PUT') })
 }
 
 export async function testWoo(creds: StoreCreds): Promise<boolean> {

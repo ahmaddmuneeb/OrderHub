@@ -1,5 +1,5 @@
 import { create } from 'zustand'
-import { Order, OrderStatus, Platform } from '../types'
+import { Order, Platform } from '../types'
 
 interface Filters {
   platform: Platform | 'all'
@@ -15,7 +15,7 @@ interface OrderState {
   setOrders: (orders: Order[]) => void
   setFilter: <K extends keyof Filters>(key: K, value: Filters[K]) => void
   setSelectedOrderId: (id: string | null) => void
-  updateOrderStatus: (orderId: string, status: OrderStatus) => void
+  updateOrderStatus: (orderId: string, status: string) => void
   filteredOrders: () => Order[]
 }
 
@@ -45,9 +45,11 @@ export const useOrderStore = create<OrderState>((set, get) => ({
       if (filters.search) {
         const q = filters.search.toLowerCase()
         if (
+          !order.orderNumber.toLowerCase().includes(q) &&
           !order.platformOrderId.toLowerCase().includes(q) &&
           !order.customerName.toLowerCase().includes(q) &&
-          !order.customerEmail.toLowerCase().includes(q)
+          !order.customerEmail.toLowerCase().includes(q) &&
+          !order.tags.toLowerCase().includes(q)
         )
           return false
       }
