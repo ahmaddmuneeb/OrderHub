@@ -1,6 +1,67 @@
 import { Timestamp } from 'firebase/firestore'
 
 export type Platform = 'shopify' | 'woocommerce' | 'bigcommerce'
+
+export type Role = 'super_admin' | 'admin' | 'manager' | 'viewer'
+
+export type Permission =
+  | 'view_orders'
+  | 'update_order_status'
+  | 'manage_stores'
+  | 'manage_users'
+  | 'view_analytics'
+
+export const ROLE_DEFAULT_PERMISSIONS: Record<Role, Permission[]> = {
+  super_admin: ['view_orders', 'update_order_status', 'manage_stores', 'manage_users', 'view_analytics'],
+  admin:       ['view_orders', 'update_order_status', 'manage_stores', 'view_analytics'],
+  manager:     ['view_orders', 'update_order_status', 'view_analytics'],
+  viewer:      ['view_orders', 'view_analytics'],
+}
+
+// Permissions that are locked (forced off) for a role and cannot be toggled
+export const ROLE_LOCKED_PERMISSIONS: Partial<Record<Role, Permission[]>> = {
+  manager: ['manage_stores'],
+  viewer:  ['update_order_status', 'manage_stores'],
+}
+
+export const PERMISSION_LABELS: Record<Permission, string> = {
+  view_orders: 'View Orders',
+  update_order_status: 'Update Order Status',
+  manage_stores: 'Manage Stores',
+  manage_users: 'Manage Users',
+  view_analytics: 'View Analytics',
+}
+
+export interface RoleDefinition {
+  id: string
+  name: string
+  description: string
+  permissions: string[]
+  isSystem: boolean
+  createdAt: Timestamp
+  createdBy?: string
+}
+
+export interface PermissionDefinition {
+  id: string
+  key: string
+  label: string
+  description: string
+  isSystem: boolean
+  createdAt: Timestamp
+  createdBy?: string
+}
+
+export interface UserProfile {
+  uid: string
+  email: string
+  displayName: string
+  role: Role
+  permissions: Permission[]
+  status: 'active' | 'suspended'
+  createdAt: Timestamp
+  createdBy?: string
+}
 export type OrderStatus = string
 
 export interface OrderItem {
@@ -57,7 +118,7 @@ export interface StoreCredentials {
 
 // Native statuses per platform — drives kanban columns and status dropdown
 export const PLATFORM_STATUSES: Record<Platform, string[]> = {
-  shopify: ['unfulfilled', 'partial', 'fulfilled', 'cancelled'],
+  shopify: ['unfulfilled', 'in_progress', 'fulfilled', 'on_hold', 'delivered', 'cancelled'],
   woocommerce: ['pending', 'processing', 'on-hold', 'completed', 'cancelled', 'refunded', 'failed'],
   bigcommerce: [
     'Pending', 'Awaiting Payment', 'Awaiting Fulfillment', 'Awaiting Shipment',
@@ -66,8 +127,9 @@ export const PLATFORM_STATUSES: Record<Platform, string[]> = {
 }
 
 export const STATUS_DISPLAY_NAMES: Record<string, string> = {
-  unfulfilled: 'Unfulfilled', partial: 'Partially Fulfilled',
-  fulfilled: 'Fulfilled', cancelled: 'Cancelled',
+  unfulfilled: 'Unfulfilled', in_progress: 'In Progress',
+  fulfilled: 'Fulfilled', on_hold: 'On Hold', delivered: 'Delivered',
+  partial: 'Partially Fulfilled', cancelled: 'Cancelled',
   pending: 'Pending', processing: 'Processing',
   'on-hold': 'On Hold', completed: 'Completed',
   refunded: 'Refunded', failed: 'Failed',
@@ -83,8 +145,9 @@ export function getStatusLabel(status: string): string {
 
 export function getStatusDotColor(status: string): string {
   const map: Record<string, string> = {
-    unfulfilled: 'bg-blue-500', partial: 'bg-amber-500',
-    fulfilled: 'bg-emerald-500', cancelled: 'bg-rose-500',
+    unfulfilled: 'bg-blue-500', in_progress: 'bg-amber-500',
+    fulfilled: 'bg-emerald-500', on_hold: 'bg-orange-500', delivered: 'bg-teal-500',
+    partial: 'bg-amber-500', cancelled: 'bg-rose-500',
     'Cancelled': 'bg-rose-500', pending: 'bg-amber-500',
     'Pending': 'bg-amber-500', processing: 'bg-violet-500',
     'on-hold': 'bg-orange-500', completed: 'bg-emerald-500',
@@ -101,8 +164,11 @@ export function getStatusDotColor(status: string): string {
 export function getStatusBadgeClass(status: string): string {
   const map: Record<string, string> = {
     unfulfilled: 'bg-blue-500/15 text-blue-400 border-blue-500/25',
+    in_progress: 'bg-amber-500/15 text-amber-400 border-amber-500/25',
+    fulfilled:   'bg-emerald-500/15 text-emerald-400 border-emerald-500/25',
+    on_hold:     'bg-orange-500/15 text-orange-400 border-orange-500/25',
+    delivered:   'bg-teal-500/15 text-teal-400 border-teal-500/25',
     partial: 'bg-amber-500/15 text-amber-400 border-amber-500/25',
-    fulfilled: 'bg-emerald-500/15 text-emerald-400 border-emerald-500/25',
     cancelled: 'bg-rose-500/15 text-rose-400 border-rose-500/25',
     'Cancelled': 'bg-rose-500/15 text-rose-400 border-rose-500/25',
     pending: 'bg-amber-500/15 text-amber-400 border-amber-500/25',

@@ -1,25 +1,15 @@
 'use client'
 
 import { Search, X } from 'lucide-react'
-import { Platform } from '../../types'
 import { useOrderStore } from '../../store/useOrderStore'
-
-const PLATFORMS: { value: Platform | 'all'; label: string }[] = [
-  { value: 'all', label: 'All' },
-  { value: 'shopify', label: 'Shopify' },
-  { value: 'woocommerce', label: 'WooCommerce' },
-  { value: 'bigcommerce', label: 'BigCommerce' },
-]
 
 export function FilterBar() {
   const { filters, setFilter } = useOrderStore()
 
-  const hasFilters =
-    filters.search || filters.platform !== 'all' || filters.dateFrom || filters.dateTo
+  const hasFilters = filters.search || filters.dateFrom || filters.dateTo
 
   function clearAll() {
     setFilter('search', '')
-    setFilter('platform', 'all')
     setFilter('dateFrom', '')
     setFilter('dateTo', '')
   }
@@ -27,7 +17,7 @@ export function FilterBar() {
   return (
     <div className="flex flex-wrap items-center gap-2.5">
       {/* Search */}
-      <div className="relative min-w-[220px] flex-1">
+      <div className="relative min-w-[200px] flex-1">
         <Search size={13} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500" />
         <input
           value={filters.search}
@@ -44,23 +34,6 @@ export function FilterBar() {
             <X size={13} />
           </button>
         )}
-      </div>
-
-      {/* Platform segmented control */}
-      <div className="flex items-center gap-1 rounded-xl border border-white/[0.08] bg-white/[0.04] p-1">
-        {PLATFORMS.map(({ value, label }) => (
-          <button
-            key={value}
-            onClick={() => setFilter('platform', value)}
-            className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition-all duration-150 ${
-              filters.platform === value
-                ? 'bg-indigo-600 text-white shadow-sm'
-                : 'text-slate-500 hover:bg-white/[0.07] hover:text-slate-300'
-            }`}
-          >
-            {label}
-          </button>
-        ))}
       </div>
 
       {/* Date range */}

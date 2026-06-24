@@ -6,10 +6,11 @@ import { useOrderStore } from '../../store/useOrderStore'
 import { useStoreStore } from '../../store/useStoreStore'
 import { Order, PLATFORM_STATUSES, PLATFORM_LABELS, PLATFORM_COLORS, getStatusLabel, getStatusBadgeClass } from '../../types'
 import { Drawer } from '../ui/Drawer'
+import { Dropdown } from '../ui/Dropdown'
 import { formatCurrency } from '../../lib/utils'
 import { ExternalLink, Calendar, Package, Store, Tag, Truck } from 'lucide-react'
 import { format } from 'date-fns'
-import toast from 'react-hot-toast'
+import { toast } from 'sonner'
 
 interface Props {
   orderId: string | null
@@ -75,18 +76,16 @@ export function OrderDetailDrawer({ orderId, onClose }: Props) {
                 {order.channel}
               </span>
             )}
-            <select
+            <Dropdown
               value={order.status}
-              onChange={(e) => handleStatusChange(e.target.value)}
+              onChange={(v) => handleStatusChange(v as string)}
               disabled={savingStatus}
-              className="rounded-xl border border-white/[0.1] bg-white/[0.08] px-3 py-1.5 text-sm font-semibold text-slate-200
-                         focus:border-indigo-500/60 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 disabled:opacity-50 transition-shadow
-                         [color-scheme:dark]"
-            >
-              {PLATFORM_STATUSES[order.platform].map((s) => (
-                <option key={s} value={s}>{getStatusLabel(s)}</option>
-              ))}
-            </select>
+              size="sm"
+              options={PLATFORM_STATUSES[order.platform].map((s) => ({
+                value: s,
+                label: getStatusLabel(s),
+              }))}
+            />
             {order.platformOrderUrl && (
               <a
                 href={order.platformOrderUrl}

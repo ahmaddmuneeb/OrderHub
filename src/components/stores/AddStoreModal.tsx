@@ -5,8 +5,9 @@ import { collection, addDoc, serverTimestamp } from 'firebase/firestore'
 import { db } from '../../lib/firebase'
 import { useAuthStore } from '../../store/useAuthStore'
 import { Modal } from '../ui/Modal'
+import { Dropdown } from '../ui/Dropdown'
 import { Platform, StoreCredentials } from '../../types'
-import toast from 'react-hot-toast'
+import { toast } from 'sonner'
 import { Info } from 'lucide-react'
 
 interface Props {
@@ -111,18 +112,16 @@ export function AddStoreModal({ open, onClose }: Props) {
       <div className="space-y-4">
 
         {/* Platform picker */}
-        <div>
-          <label className="mb-1.5 block text-sm font-semibold text-slate-400">Platform</label>
-          <select
-            value={platform}
-            onChange={(e) => { setPlatform(e.target.value as Platform); setCreds({}) }}
-            className="w-full rounded-xl border border-white/[0.1] bg-white/[0.07] px-3 py-2.5 text-sm text-slate-200 focus:border-indigo-500/60 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 [color-scheme:dark]"
-          >
-            <option value="shopify">Shopify</option>
-            <option value="woocommerce">WooCommerce</option>
-            <option value="bigcommerce">BigCommerce</option>
-          </select>
-        </div>
+        <Dropdown
+          label="Platform"
+          value={platform}
+          onChange={(v) => { setPlatform(v as Platform); setCreds({}) }}
+          options={[
+            { value: 'shopify',     label: 'Shopify',     description: 'mystore.myshopify.com' },
+            { value: 'woocommerce', label: 'WooCommerce', description: 'WordPress-based store' },
+            { value: 'bigcommerce', label: 'BigCommerce',  description: 'mystore.mybigcommerce.com' },
+          ]}
+        />
 
         {/* Help hint */}
         <div className="rounded-xl border border-indigo-500/20 bg-indigo-500/10 px-3 py-2.5 text-xs text-indigo-300">

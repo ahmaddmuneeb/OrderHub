@@ -7,7 +7,7 @@ import {
   signInWithPopup,
 } from 'firebase/auth'
 import { auth, googleProvider } from '../lib/firebase'
-import toast from 'react-hot-toast'
+import { toast } from 'sonner'
 import { ShoppingBag, ArrowRight } from 'lucide-react'
 
 export function AuthPage() {

@@ -4,7 +4,7 @@ import { doc, deleteDoc } from 'firebase/firestore'
 import { db } from '../../lib/firebase'
 import { Store, PLATFORM_LABELS, PLATFORM_COLORS } from '../../types'
 import { Unplug, CheckCircle2, AlertCircle, WifiOff } from 'lucide-react'
-import toast from 'react-hot-toast'
+import { toast } from 'sonner'
 
 const STATUS_CONFIG = {
   connected: {

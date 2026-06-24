@@ -3,11 +3,17 @@
 import { useEffect } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
 import { onAuthStateChanged } from 'firebase/auth'
-import { Toaster } from 'react-hot-toast'
+import { Toaster } from 'sonner'
 import { auth } from '../lib/firebase'
 import { useAuthStore } from '../store/useAuthStore'
+import { useUserProfile } from '../hooks/useUserProfile'
 
 const PUBLIC_PATHS = ['/auth']
+
+function ProfileLoader() {
+  useUserProfile()
+  return null
+}
 
 export function Providers({ children }: { children: React.ReactNode }) {
   const { setUser, setLoading, user, loading } = useAuthStore()
@@ -29,7 +35,6 @@ export function Providers({ children }: { children: React.ReactNode }) {
     if (user && isPublic) router.replace('/')
   }, [user, loading, pathname, router])
 
-  // Show spinner while auth resolves on protected routes
   if (loading && !PUBLIC_PATHS.includes(pathname)) {
     return (
       <div className="flex min-h-screen items-center justify-center">
@@ -40,8 +45,9 @@ export function Providers({ children }: { children: React.ReactNode }) {
 
   return (
     <>
+      <ProfileLoader />
       {children}
-      <Toaster position="top-right" />
+      <Toaster richColors theme="dark" position="top-right" />
     </>
   )
 }
