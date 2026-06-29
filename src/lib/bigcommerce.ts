@@ -13,6 +13,8 @@ const BC_STATUS_IDS: Record<string, number> = {
 function normalize(raw: any, storeId: string, storeUrl: string): NormalizedOrder {
   const items: OrderItem[] = (raw.products ?? []).map((p: any) => ({
     name: p.name, qty: p.quantity, price: parseFloat(p.base_price),
+    sku: p.sku ?? undefined,
+    lineItemId: String(p.id),
   }))
   const b = raw.billing_address ?? {}
   const status = raw.status ?? String(raw.status_id)
@@ -25,6 +27,10 @@ function normalize(raw: any, storeId: string, storeUrl: string): NormalizedOrder
     customerEmail: b.email ?? '',
     items, total: parseFloat(raw.total_inc_tax ?? raw.total_ex_tax ?? '0'),
     currency: raw.currency_code ?? 'USD',
+    subtotal: parseFloat(raw.subtotal_inc_tax ?? raw.subtotal_ex_tax ?? '0'),
+    totalTax: parseFloat(raw.total_tax ?? '0'),
+    totalShipping: parseFloat(raw.shipping_cost_inc_tax ?? '0'),
+    totalDiscounts: parseFloat(raw.discount_amount ?? '0'),
     status,
     financialStatus: raw.payment_status ?? '',
     fulfillmentStatus: status,
@@ -36,6 +42,10 @@ function normalize(raw: any, storeId: string, storeUrl: string): NormalizedOrder
     updatedAt: new Date(raw.date_modified),
     notes: raw.customer_message ?? '',
     platformOrderUrl: `${storeUrl}/manage/orders/${raw.id}`,
+    discountCodes: [],
+    taxLines: [],
+    fulfillments: [],
+    transactions: [],
   }
 }
 

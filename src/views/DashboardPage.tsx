@@ -111,6 +111,11 @@ export function DashboardPage() {
     const order = orders.find((o) => o.id === orderId)
     if (!order || order.status === newStatus) return
 
+    if (order.platform === 'shopify') {
+      toast.info('Open the order and use Fulfill, Cancel, or Refund buttons to change a Shopify order\'s status.')
+      return
+    }
+
     updateOrderStatus(orderId, newStatus)
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const storeCreds = (stores.find((s) => s.id === order.storeId) as any)?.credentials

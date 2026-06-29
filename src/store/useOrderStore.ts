@@ -1,5 +1,5 @@
 import { create } from 'zustand'
-import { Order, Platform } from '../types'
+import { Order, Platform, OrderFulfillment } from '../types'
 
 interface Filters {
   platform: Platform | 'all'
@@ -16,6 +16,11 @@ interface OrderState {
   setFilter: <K extends keyof Filters>(key: K, value: Filters[K]) => void
   setSelectedOrderId: (id: string | null) => void
   updateOrderStatus: (orderId: string, status: string) => void
+  updateOrderFields: (orderId: string, fields: Partial<Order>) => void
+  updateOrderNote: (orderId: string, note: string) => void
+  updateOrderTags: (orderId: string, tags: string) => void
+  archiveOrder: (orderId: string, archived: boolean) => void
+  addFulfillmentToOrder: (orderId: string, fulfillment: OrderFulfillment) => void
   filteredOrders: () => Order[]
 }
 
@@ -35,6 +40,48 @@ export const useOrderStore = create<OrderState>((set, get) => ({
     set((state) => ({
       orders: state.orders.map((o) =>
         o.id === orderId ? { ...o, status } : o,
+      ),
+    })),
+
+  updateOrderFields: (orderId, fields) =>
+    set((state) => ({
+      orders: state.orders.map((o) =>
+        o.id === orderId ? { ...o, ...fields } : o,
+      ),
+    })),
+
+  updateOrderNote: (orderId, note) =>
+    set((state) => ({
+      orders: state.orders.map((o) =>
+        o.id === orderId ? { ...o, notes: note } : o,
+      ),
+    })),
+
+  updateOrderTags: (orderId, tags) =>
+    set((state) => ({
+      orders: state.orders.map((o) =>
+        o.id === orderId ? { ...o, tags } : o,
+      ),
+    })),
+
+  archiveOrder: (orderId, archived) =>
+    set((state) => ({
+      orders: state.orders.map((o) => {
+        if (o.id !== orderId) return o
+        return {
+          ...o,
+          closedAt: archived ? new Date().toISOString() : undefined,
+          status: archived ? 'fulfilled' : o.status,
+        }
+      }),
+    })),
+
+  addFulfillmentToOrder: (orderId, fulfillment) =>
+    set((state) => ({
+      orders: state.orders.map((o) =>
+        o.id === orderId
+          ? { ...o, fulfillments: [...(o.fulfillments ?? []), fulfillment], status: 'fulfilled', fulfillmentStatus: 'fulfilled' }
+          : o,
       ),
     })),
 

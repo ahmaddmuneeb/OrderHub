@@ -26,6 +26,8 @@ function wooFulfillmentStatus(status: string): string {
 function normalize(raw: any, storeId: string, storeUrl: string): NormalizedOrder {
   const items: OrderItem[] = (raw.line_items ?? []).map((li: any) => ({
     name: li.name, qty: li.quantity, price: parseFloat(li.price),
+    sku: li.sku ?? undefined,
+    lineItemId: String(li.id),
   }))
   const b = raw.billing ?? {}
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -36,8 +38,13 @@ function normalize(raw: any, storeId: string, storeUrl: string): NormalizedOrder
     orderNumber: String(raw.number ?? raw.id),
     customerName: `${b.first_name ?? ''} ${b.last_name ?? ''}`.trim() || 'Unknown',
     customerEmail: b.email ?? '',
+    phone: b.phone ?? undefined,
     items, total: parseFloat(raw.total ?? '0'),
     currency: raw.currency ?? 'USD',
+    subtotal: parseFloat(raw.subtotal ?? '0'),
+    totalTax: parseFloat(raw.total_tax ?? '0'),
+    totalShipping: parseFloat(raw.shipping_total ?? '0'),
+    totalDiscounts: parseFloat(raw.discount_total ?? '0'),
     status: raw.status ?? 'pending',
     financialStatus: wooFinancialStatus(raw.status ?? 'pending'),
     fulfillmentStatus: wooFulfillmentStatus(raw.status ?? 'pending'),
@@ -49,6 +56,14 @@ function normalize(raw: any, storeId: string, storeUrl: string): NormalizedOrder
     updatedAt: new Date(raw.date_modified),
     notes: raw.customer_note ?? '',
     platformOrderUrl: `${storeUrl}/wp-admin/post.php?post=${raw.id}&action=edit`,
+    discountCodes: (raw.coupon_lines ?? []).map((cl: any) => ({
+      code: cl.code, amount: cl.discount, type: 'fixed_amount',
+    })),
+    taxLines: (raw.tax_lines ?? []).map((tl: any) => ({
+      title: tl.label, price: tl.tax_total, rate: 0,
+    })),
+    fulfillments: [],
+    transactions: [],
   }
 }
 

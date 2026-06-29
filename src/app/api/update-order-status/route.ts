@@ -14,11 +14,9 @@ export async function POST(req: NextRequest) {
       credentials: StoreCreds
     }
 
-    try {
-      if (platform === 'shopify') await pushShopifyStatus(credentials, platformOrderId, status)
-      else if (platform === 'woocommerce') await pushWooStatus(credentials, platformOrderId, status)
-      else await pushBCStatus(credentials, platformOrderId, status)
-    } catch { /* best-effort platform push */ }
+    if (platform === 'shopify') await pushShopifyStatus(credentials, platformOrderId, status)
+    else if (platform === 'woocommerce') await pushWooStatus(credentials, platformOrderId, status)
+    else await pushBCStatus(credentials, platformOrderId, status)
 
     return Response.json({ success: true })
   } catch (err) {
